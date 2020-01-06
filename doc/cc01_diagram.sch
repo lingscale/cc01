@@ -354,8 +354,8 @@ T 47650 49325 9 10 1 0 0 0 1
 DISPATCH
 T 48950 49325 9 10 1 0 0 0 1
 EXECUTE
-T 53900 40100 7 11 1 0 0 0 1
-胡波  hu bo, lingscale microsystem
+T 54000 40100 7 11 1 0 0 0 1
+hu bo, lingscale microsystem
 T 50400 40900 7 16 1 0 0 0 1
 cc01 diagram
 T 50600 40100 7 11 1 0 0 0 1

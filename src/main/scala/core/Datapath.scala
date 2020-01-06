@@ -536,13 +536,6 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   //   but it doesnt matter much.
   wfi_halt_exu_req := wfi_halt_req;
 
-  // wfi flag generation
-  val wfi_flag = RegInit(false.B)
-  when (wfi_halt_ifu_req && wfi_halt_ifu_ack && wfi_halt_exu_req && wfi_halt_exu_ack) { wfi_flag := true.B}
-  when (intrp_req_raw) { wfi_flag := false.B }
-
-  val core_wfi = wfi_flag && !intrp_req_raw  /* output to control ifu clock */
-
   // there are three kinds of exceptions, priority top down
   //   lsu aligned access error exception
   //      asynochronous non-precise exception /* and fe_pc_vld? */

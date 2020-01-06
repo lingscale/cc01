@@ -140,8 +140,8 @@ T 55550 57400 9 16 1 0 0 0 1
 (excp)
 T 53200 51600 7 16 1 0 0 0 1
 cc01 vaid-ready signals
-T 56700 50800 7 11 1 0 0 0 1
-胡波  hu bo, lingscale microsystem
+T 56800 50800 7 11 1 0 0 0 1
+hu bo, lingscale microsystem
 T 53400 50800 7 11 1 0 0 0 1
 1                 1
 B 57000 56500 1000 2000 3 0 0 0 -1 -1 0 -1 -1 -1 -1 -1
