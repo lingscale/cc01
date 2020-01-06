@@ -1,0 +1,110 @@
+
+rv32mi-p-breakpoint：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	00200193          	li	gp,2
+8000000c:	7a001073          	csrw	tselect,zero
+80000010:	7a0025f3          	csrr	a1,tselect
+80000014:	0eb01a63          	bne	zero,a1,80000108 <pass>
+80000018:	00000617          	auipc	a2,0x0
+8000001c:	02060613          	addi	a2,a2,32 # 80000038 <reset_vector+0x30>
+80000020:	7a261073          	csrw	tdata2,a2
+80000024:	20000537          	lui	a0,0x20000
+80000028:	04450513          	addi	a0,a0,68 # 20000044 <_start-0x5fffffbc>
+8000002c:	7a151073          	csrw	tdata1,a0
+80000030:	7a1025f3          	csrr	a1,tdata1
+80000034:	00b51863          	bne	a0,a1,80000044 <reset_vector+0x3c>
+80000038:	0a000e63          	beqz	zero,800000f4 <fail>
+8000003c:	00300193          	li	gp,3
+80000040:	00062503          	lw	a0,0(a2)
+80000044:	00400193          	li	gp,4
+80000048:	20000537          	lui	a0,0x20000
+8000004c:	04150513          	addi	a0,a0,65 # 20000041 <_start-0x5fffffbf>
+80000050:	7a151073          	csrw	tdata1,a0
+80000054:	7a1025f3          	csrr	a1,tdata1
+80000058:	02b51063          	bne	a0,a1,80000078 <reset_vector+0x70>
+8000005c:	00002617          	auipc	a2,0x2
+80000060:	fa460613          	addi	a2,a2,-92 # 80002000 <begin_signature>
+80000064:	7a261073          	csrw	tdata2,a2
+80000068:	00062603          	lw	a2,0(a2)
+8000006c:	08060463          	beqz	a2,800000f4 <fail>
+80000070:	00500193          	li	gp,5
+80000074:	00062023          	sw	zero,0(a2)
+80000078:	00600193          	li	gp,6
+8000007c:	20000537          	lui	a0,0x20000
+80000080:	04250513          	addi	a0,a0,66 # 20000042 <_start-0x5fffffbe>
+80000084:	7a151073          	csrw	tdata1,a0
+80000088:	7a1025f3          	csrr	a1,tdata1
+8000008c:	06b51263          	bne	a0,a1,800000f0 <reset_vector+0xe8>
+80000090:	00c62023          	sw	a2,0(a2)
+80000094:	00700193          	li	gp,7
+80000098:	00062603          	lw	a2,0(a2)
+8000009c:	04061c63          	bnez	a2,800000f4 <fail>
+800000a0:	00100513          	li	a0,1
+800000a4:	7a051073          	csrw	tselect,a0
+800000a8:	7a0025f3          	csrr	a1,tselect
+800000ac:	04b51e63          	bne	a0,a1,80000108 <pass>
+800000b0:	20000537          	lui	a0,0x20000
+800000b4:	04150513          	addi	a0,a0,65 # 20000041 <_start-0x5fffffbf>
+800000b8:	7a151073          	csrw	tdata1,a0
+800000bc:	00002697          	auipc	a3,0x2
+800000c0:	f4868693          	addi	a3,a3,-184 # 80002004 <data2>
+800000c4:	7a269073          	csrw	tdata2,a3
+800000c8:	00800193          	li	gp,8
+800000cc:	0006a683          	lw	a3,0(a3)
+800000d0:	02068263          	beqz	a3,800000f4 <fail>
+800000d4:	00a00193          	li	gp,10
+800000d8:	00002617          	auipc	a2,0x2
+800000dc:	f2860613          	addi	a2,a2,-216 # 80002000 <begin_signature>
+800000e0:	00c62023          	sw	a2,0(a2)
+800000e4:	00b00193          	li	gp,11
+800000e8:	00062603          	lw	a2,0(a2)
+800000ec:	00061463          	bnez	a2,800000f4 <fail>
+800000f0:	00301c63          	bne	zero,gp,80000108 <pass>
+
+800000f4 <fail>:
+800000f4:	0ff0000f          	fence
+800000f8:	00018063          	beqz	gp,800000f8 <fail+0x4>
+800000fc:	00119193          	slli	gp,gp,0x1
+80000100:	0011e193          	ori	gp,gp,1
+80000104:	00000073          	ecall
+
+80000108 <pass>:
+80000108:	0ff0000f          	fence
+8000010c:	00100193          	li	gp,1
+80000110:	00000073          	ecall
+
+80000114 <mtvec_handler>:
+80000114:	0011f293          	andi	t0,gp,1
+80000118:	fc029ee3          	bnez	t0,800000f4 <fail>
+8000011c:	00300293          	li	t0,3
+80000120:	34202373          	csrr	t1,mcause
+80000124:	fc6298e3          	bne	t0,t1,800000f4 <fail>
+80000128:	341022f3          	csrr	t0,mepc
+8000012c:	00428293          	addi	t0,t0,4
+80000130:	34129073          	csrw	mepc,t0
+80000134:	30200073          	mret
+80000138:	c0001073          	unimp
+
+Disassembly of section .data:
+
+80002000 <begin_signature>:
+80002000:	0000                	unimp
+80002002:	0000                	unimp
+
+80002004 <data2>:
+80002004:	0000                	unimp
+80002006:	0000                	unimp
+80002008:	0000                	unimp
+8000200a:	0000                	unimp
+8000200c:	0000                	unimp
+8000200e:	0000                	unimp

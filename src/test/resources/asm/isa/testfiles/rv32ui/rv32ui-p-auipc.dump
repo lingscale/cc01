@@ -1,0 +1,45 @@
+
+rv32ui-p-auipc：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	00002517          	auipc	a0,0x2
+8000000c:	71c50513          	addi	a0,a0,1820 # 80002724 <_end+0x724>
+80000010:	004005ef          	jal	a1,80000014 <reset_vector+0xc>
+80000014:	40b50533          	sub	a0,a0,a1
+80000018:	00002eb7          	lui	t4,0x2
+8000001c:	710e8e93          	addi	t4,t4,1808 # 2710 <_start-0x7fffd8f0>
+80000020:	00200193          	li	gp,2
+80000024:	03d51463          	bne	a0,t4,8000004c <fail>
+
+80000028 <test_3>:
+80000028:	ffffe517          	auipc	a0,0xffffe
+8000002c:	8fc50513          	addi	a0,a0,-1796 # 7fffd924 <_start-0x26dc>
+80000030:	004005ef          	jal	a1,80000034 <test_3+0xc>
+80000034:	40b50533          	sub	a0,a0,a1
+80000038:	ffffeeb7          	lui	t4,0xffffe
+8000003c:	8f0e8e93          	addi	t4,t4,-1808 # ffffd8f0 <_end+0x7fffb8f0>
+80000040:	00300193          	li	gp,3
+80000044:	01d51463          	bne	a0,t4,8000004c <fail>
+80000048:	00301c63          	bne	zero,gp,80000060 <pass>
+
+8000004c <fail>:
+8000004c:	0ff0000f          	fence
+80000050:	00018063          	beqz	gp,80000050 <fail+0x4>
+80000054:	00119193          	slli	gp,gp,0x1
+80000058:	0011e193          	ori	gp,gp,1
+8000005c:	00000073          	ecall
+
+80000060 <pass>:
+80000060:	0ff0000f          	fence
+80000064:	00100193          	li	gp,1
+80000068:	00000073          	ecall
+8000006c:	c0001073          	unimp

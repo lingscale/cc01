@@ -1,0 +1,46 @@
+
+rv32mi-p-shamt：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	00100513          	li	a0,1
+8000000c:	01051513          	slli	a0,a0,0x10
+80000010:	00010eb7          	lui	t4,0x10
+80000014:	00200193          	li	gp,2
+80000018:	01d51c63          	bne	a0,t4,80000030 <fail>
+
+8000001c <test_3>:
+8000001c:	02051513          	slli	a0,a0,0x20    !!!!!wrong!!!!!
+80000020:	00100e93          	li	t4,1
+80000024:	00300193          	li	gp,3
+80000028:	01d01463          	bne	zero,t4,80000030 <fail>
+8000002c:	00301c63          	bne	zero,gp,80000044 <pass>
+
+80000030 <fail>:
+80000030:	0ff0000f          	fence
+80000034:	00018063          	beqz	gp,80000034 <fail+0x4>
+80000038:	00119193          	slli	gp,gp,0x1
+8000003c:	0011e193          	ori	gp,gp,1
+80000040:	00000073          	ecall
+
+80000044 <pass>:
+80000044:	0ff0000f          	fence
+80000048:	00100193          	li	gp,1
+8000004c:	00000073          	ecall
+
+80000050 <mtvec_handler>:
+80000050:	00200293          	li	t0,2
+80000054:	fc519ee3          	bne	gp,t0,80000030 <fail>
+80000058:	342022f3          	csrr	t0,mcause
+8000005c:	00200313          	li	t1,2
+80000060:	fc6298e3          	bne	t0,t1,80000030 <fail>
+80000064:	fe1ff06f          	j	80000044 <pass>
+80000068:	c0001073          	unimp

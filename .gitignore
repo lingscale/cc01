@@ -1,6 +1,8 @@
 ### sourcenav proj
 SNDB4/*
 cc01.proj
+###
+*.core
 ### Project Specific stuff
 test_run_dir/*
 ### XilinxISE template

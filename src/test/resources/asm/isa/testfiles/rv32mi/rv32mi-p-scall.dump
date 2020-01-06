@@ -1,0 +1,57 @@
+
+rv32mi-p-scall：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	00200193          	li	gp,2
+8000000c:	00800313          	li	t1,8
+80000010:	000022b7          	lui	t0,0x2
+80000014:	80028293          	addi	t0,t0,-2048 # 1800 <_start-0x7fffe800>
+80000018:	3002b073          	csrc	mstatus,t0
+8000001c:	300023f3          	csrr	t2,mstatus
+80000020:	0072f2b3          	and	t0,t0,t2
+80000024:	00028463          	beqz	t0,8000002c <reset_vector+0x24>
+80000028:	00b00313          	li	t1,11
+8000002c:	000022b7          	lui	t0,0x2
+80000030:	80028293          	addi	t0,t0,-2048 # 1800 <_start-0x7fffe800>
+80000034:	3002b073          	csrc	mstatus,t0
+80000038:	00000297          	auipc	t0,0x0
+8000003c:	01028293          	addi	t0,t0,16 # 80000048 <reset_vector+0x40>
+80000040:	34129073          	csrw	mepc,t0
+80000044:	30200073          	mret
+80000048:	00100193          	li	gp,1
+
+8000004c <do_scall>:
+8000004c:	00000073          	ecall
+80000050:	0080006f          	j	80000058 <fail>
+80000054:	00301c63          	bne	zero,gp,8000006c <pass>
+
+80000058 <fail>:
+80000058:	0ff0000f          	fence
+8000005c:	00018063          	beqz	gp,8000005c <fail+0x4>
+80000060:	00119193          	slli	gp,gp,0x1
+80000064:	0011e193          	ori	gp,gp,1
+80000068:	00000073          	ecall
+
+8000006c <pass>:
+8000006c:	0ff0000f          	fence
+80000070:	00100193          	li	gp,1
+80000074:	00000073          	ecall
+
+80000078 <mtvec_handler>:
+80000078:	342022f3          	csrr	t0,mcause
+8000007c:	fc629ee3          	bne	t0,t1,80000058 <fail>
+80000080:	00000397          	auipc	t2,0x0
+80000084:	fcc38393          	addi	t2,t2,-52 # 8000004c <do_scall>
+80000088:	341022f3          	csrr	t0,mepc
+8000008c:	fc7296e3          	bne	t0,t2,80000058 <fail>
+80000090:	fddff06f          	j	8000006c <pass>
+80000094:	c0001073          	unimp

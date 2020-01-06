@@ -166,7 +166,7 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
 
 
   // Machine Scratch Register (mscratch)
-  val mscratch = 0.U(xlen.W)  // for OS, not implement now
+  val mscratch = Reg(UInt(xlen.W))
 
   // Machine Exception Program Counter (mepc)
   val mepc = Reg(UInt(xlen.W))
@@ -234,6 +234,8 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
       MTIE := wdata(7)
       MSIE := wdata(3)
       MEIE := wdata(11)
+    } .elsewhen(csr_addr === CSR.mscratch) {
+      mscratch := wdata
     } .elsewhen(csr_addr === CSR.mepc) {
       mepc := wdata
     } .elsewhen(csr_addr === CSR.mcause) {

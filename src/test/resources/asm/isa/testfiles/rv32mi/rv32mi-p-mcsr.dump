@@ -1,0 +1,44 @@
+
+rv32mi-p-mcsr：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	30102573          	csrr	a0,misa
+8000000c:	01e55513          	srli	a0,a0,0x1e
+80000010:	00100e93          	li	t4,1
+80000014:	00200193          	li	gp,2
+80000018:	03d51863          	bne	a0,t4,80000048 <fail>
+
+8000001c <test_3>:
+8000001c:	f1402573          	csrr	a0,mhartid
+80000020:	00000e93          	li	t4,0
+80000024:	00300193          	li	gp,3
+80000028:	03d51063          	bne	a0,t4,80000048 <fail>
+8000002c:	f1302573          	csrr	a0,mimpid
+80000030:	f1202573          	csrr	a0,marchid
+80000034:	f1102573          	csrr	a0,mvendorid
+80000038:	00000293          	li	t0,0
+8000003c:	3052a073          	csrs	mtvec,t0
+80000040:	3412a073          	csrs	mepc,t0
+80000044:	00301c63          	bne	zero,gp,8000005c <pass>
+
+80000048 <fail>:
+80000048:	0ff0000f          	fence
+8000004c:	00018063          	beqz	gp,8000004c <fail+0x4>
+80000050:	00119193          	slli	gp,gp,0x1
+80000054:	0011e193          	ori	gp,gp,1
+80000058:	00000073          	ecall
+
+8000005c <pass>:
+8000005c:	0ff0000f          	fence
+80000060:	00100193          	li	gp,1
+80000064:	00000073          	ecall
+80000068:	c0001073          	unimp

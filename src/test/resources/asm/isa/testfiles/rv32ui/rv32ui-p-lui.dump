@@ -1,0 +1,58 @@
+
+rv32ui-p-lui：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	000000b7          	lui	ra,0x0
+8000000c:	00000e93          	li	t4,0
+80000010:	00200193          	li	gp,2
+80000014:	05d09a63          	bne	ra,t4,80000068 <fail>
+
+80000018 <test_3>:
+80000018:	fffff0b7          	lui	ra,0xfffff
+8000001c:	4010d093          	srai	ra,ra,0x1
+80000020:	80000e93          	li	t4,-2048
+80000024:	00300193          	li	gp,3
+80000028:	05d09063          	bne	ra,t4,80000068 <fail>
+
+8000002c <test_4>:
+8000002c:	7ffff0b7          	lui	ra,0x7ffff
+80000030:	4140d093          	srai	ra,ra,0x14
+80000034:	7ff00e93          	li	t4,2047
+80000038:	00400193          	li	gp,4
+8000003c:	03d09663          	bne	ra,t4,80000068 <fail>
+
+80000040 <test_5>:
+80000040:	800000b7          	lui	ra,0x80000
+80000044:	4140d093          	srai	ra,ra,0x14
+80000048:	80000e93          	li	t4,-2048
+8000004c:	00500193          	li	gp,5
+80000050:	01d09c63          	bne	ra,t4,80000068 <fail>
+
+80000054 <test_6>:
+80000054:	80000037          	lui	zero,0x80000
+80000058:	00000e93          	li	t4,0
+8000005c:	00600193          	li	gp,6
+80000060:	01d01463          	bne	zero,t4,80000068 <fail>
+80000064:	00301c63          	bne	zero,gp,8000007c <pass>
+
+80000068 <fail>:
+80000068:	0ff0000f          	fence
+8000006c:	00018063          	beqz	gp,8000006c <fail+0x4>
+80000070:	00119193          	slli	gp,gp,0x1
+80000074:	0011e193          	ori	gp,gp,1
+80000078:	00000073          	ecall
+
+8000007c <pass>:
+8000007c:	0ff0000f          	fence
+80000080:	00100193          	li	gp,1
+80000084:	00000073          	ecall
+80000088:	c0001073          	unimp

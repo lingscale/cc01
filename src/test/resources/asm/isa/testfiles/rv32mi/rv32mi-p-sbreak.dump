@@ -1,0 +1,42 @@
+
+rv32mi-p-sbreak：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	00200193          	li	gp,2
+
+8000000c <do_break>:
+8000000c:	00100073          	ebreak
+80000010:	0080006f          	j	80000018 <fail>
+80000014:	00301c63          	bne	zero,gp,8000002c <pass>
+
+80000018 <fail>:
+80000018:	0ff0000f          	fence
+8000001c:	00018063          	beqz	gp,8000001c <fail+0x4>
+80000020:	00119193          	slli	gp,gp,0x1
+80000024:	0011e193          	ori	gp,gp,1
+80000028:	00000073          	ecall
+
+8000002c <pass>:
+8000002c:	0ff0000f          	fence
+80000030:	00100193          	li	gp,1
+80000034:	00000073          	ecall
+
+80000038 <mtvec_handler>:
+80000038:	00300313          	li	t1,3
+8000003c:	342022f3          	csrr	t0,mcause
+80000040:	fc629ce3          	bne	t0,t1,80000018 <fail>
+80000044:	00000317          	auipc	t1,0x0
+80000048:	fc830313          	addi	t1,t1,-56 # 8000000c <do_break>
+8000004c:	341022f3          	csrr	t0,mepc
+80000050:	fc6294e3          	bne	t0,t1,80000018 <fail>
+80000054:	fd9ff06f          	j	8000002c <pass>
+80000058:	c0001073          	unimp

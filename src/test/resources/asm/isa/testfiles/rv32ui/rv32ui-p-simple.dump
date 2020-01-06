@@ -1,0 +1,17 @@
+
+rv32ui-p-simple：     文件格式 elf32-littleriscv
+
+
+Disassembly of section .text.init:
+
+80000000 <_start>:
+80000000:	0080006f          	j	80000008 <reset_vector>
+
+80000004 <trap_vector>:
+80000004:	0000006f          	j	80000004 <trap_vector>
+
+80000008 <reset_vector>:
+80000008:	0ff0000f          	fence
+8000000c:	00100193          	li	gp,1
+80000010:	00000073          	ecall
+80000014:	c0001073          	unimp
