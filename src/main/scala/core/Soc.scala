@@ -14,7 +14,7 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new SocIO)
 
   val core = Module(new Core)
-//  loadMemoryFromFile(core.itcm.tcm.ram.mem, "src/test/resources/mem.txt")
+  loadMemoryFromFile(core.itcm.tcm.ram.mem, "src/test/resources/mem.txt")
 
   val uart = Module(new Uart(UartAddr.UART_BASE_ADDR))
   val rom = Module(new Rom)

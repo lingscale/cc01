@@ -12,12 +12,12 @@ class CoreConfig extends Config((site, here, up) => {
       addrBits = here(XLEN),
       dataBits = 32)
     // ITCM
-//    case ITCM_RAM_ADDR_WIDTH => 16 // 64KByte
-    case ITCM_RAM_ADDR_WIDTH => 12 // 4KByte
+    case ITCM_RAM_ADDR_WIDTH => 16 // 64KByte
+//    case ITCM_RAM_ADDR_WIDTH => 12 // 4KByte
     case ITCM_RAM_DEPTH => 1 << (here(ITCM_RAM_ADDR_WIDTH) - 2)
     // DTCM
-//    case DTCM_RAM_ADDR_WIDTH => 16 // 64KByte
-    case DTCM_RAM_ADDR_WIDTH => 12 // 4KByte
+    case DTCM_RAM_ADDR_WIDTH => 16 // 64KByte
+//    case DTCM_RAM_ADDR_WIDTH => 12 // 4KByte
     case DTCM_RAM_DEPTH => 1 << (here(DTCM_RAM_ADDR_WIDTH) - 2)
   }
 )
