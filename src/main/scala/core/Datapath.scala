@@ -608,6 +608,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   // not every alu instruction needs write back, ld st instruction can write in the gap or just wait the gap
   // if depend happens, just need one extra clock. but if lsu has higher priority, it always waste one clock.
   // but unfortunately, otif can't enq when deqing, or get combinational loop, so load store instrcutions can't dispatch back by back, the more worse time waste. and how to solve?
+  // add oitf depth to 2 can sove, but the simulation result seems alu write back has higher priority spend mor time.
 /*  regFile.io.rdwen := Mux(lw_ready, lw_valid, aw_valid)
   regFile.io.rd    := Mux(lw_ready, lsu_wdat, alu_wdat)
   regFile.io.rdidx := Mux(lw_ready, oitf.io.ret_rdidx, fe_inst(11, 7))
@@ -622,6 +623,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
   aw_ready := !lw_valid
   lw_ready := true.B
+
 }
 
 
