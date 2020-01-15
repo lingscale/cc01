@@ -60,9 +60,9 @@ class Oitf(implicit val p: Parameters) extends Module with CoreParams {
   io.dis_ready := empty || io.ret_valid
   io.ret_ready := !empty
 
-  io.oitfrd_match_disrs1 := !empty && rdwen && io.dis_rs1en && (rdidx === io.dis_rs1idx)
-  io.oitfrd_match_disrs2 := !empty && rdwen && io.dis_rs2en && (rdidx === io.dis_rs2idx)
-  io.oitfrd_match_disrd  := !empty && rdwen && io.dis_rdwen && (rdidx === io.dis_rdidx)
+  io.oitfrd_match_disrs1 := !empty && io.dis_rs1en && rdwen && (rdidx === io.dis_rs1idx)
+  io.oitfrd_match_disrs2 := !empty && io.dis_rs2en && rdwen && (rdidx === io.dis_rs2idx)
+  io.oitfrd_match_disrd  := !empty && io.dis_rdwen && rdwen && (rdidx === io.dis_rdidx)
 
   io.ret_rdwen := rdwen
   io.ret_rdidx := rdidx

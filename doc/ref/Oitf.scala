@@ -85,9 +85,9 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
   io.dis_ready := !full
   io.ret_ready := !empty
 
-  io.oitfrd_match_disrs1 := (buf_vld, buf, buf).zipped.map(_ && _.rdwen && io.dis_rs1en && _.rdidx === io.dis_rs1idx).reduce(_ || _)
-  io.oitfrd_match_disrs2 := (buf_vld, buf, buf).zipped.map(_ && _.rdwen && io.dis_rs2en && _.rdidx === io.dis_rs2idx).reduce(_ || _)
-  io.oitfrd_match_disrd  := (buf_vld, buf, buf).zipped.map(_ && _.rdwen && io.dis_rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
+  io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs1idx).reduce(_ || _)
+  io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs2idx).reduce(_ || _)
+  io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
 
   io.empty := empty
 }
