@@ -6,7 +6,7 @@ import chisel3.util._
 class RamMaskIO(val addr_width: Int) extends Bundle {
   val dataOut = Output(UInt(32.W))
   val dataIn  = Input(UInt(32.W))
-  val addr    = Input(UInt(addr_width.W))
+  val addr    = Input(UInt(32.W))
   val read    = Input(Bool())
   val write   = Input(Bool())
   val mask    = Input(UInt(4.W))
@@ -31,11 +31,11 @@ class RamMask(val addr_width: Int, val ram_depth: Int) extends Module {   // Sin
 
 // this style will cause instruction fetch combinational loop
   when (io.write) {
-    mem.write(io.addr, dataIn, mask)
+    mem.write(io.addr(addr_width-1+2, 0+2), dataIn, mask)
     io.dataOut := DontCare
   }
   .otherwise {
-    io.dataOut := mem.read(io.addr, io.read).asUInt
+    io.dataOut := mem.read(io.addr(addr_width-1+2, 0+2), io.read).asUInt
   }
 
 //  this style may not deduce single port ram

@@ -11,8 +11,10 @@ int main() {
    int rdata;
 
 
+   UART_DIV_ADDR = 195; // 57600 for 11.2896M
    //UART_DIV_ADDR = 425; // 57600 for 24.576M
-   UART_DIV_ADDR = 867;  // 57600 for 50M
+   //UART_DIV_ADDR = 587; // 57600 for 33.8688M
+   //UART_DIV_ADDR = 867;  // 57600 for 50M
 
    for ( i = 0; i < 4; i++ ) {
       UART_TXDATA_ADDR = a[ i ];

@@ -41,7 +41,6 @@ class Biu(implicit val p: Parameters) extends Module with HasIcbParameters {
                          Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.PLIC_ADDR, 3.U, 4.U))))
 
   io.mem  <> slave_spl.io.slave(0)
-  io.mem.cmd.bits.addr := slave_spl.io.slave(0).cmd.bits.addr >> 2
   io.ppi  <> slave_spl.io.slave(1)
   io.clic <> slave_spl.io.slave(2)
   io.plic <> slave_spl.io.slave(3)

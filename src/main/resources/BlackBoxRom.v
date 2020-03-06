@@ -1,6 +1,6 @@
-module BlackBoxSinglePortRom(
+module BlackBoxRom(
    output reg [ 31 : 0 ] q,
-   input [ 6 : 0 ] addr,
+   input [ 31 : 0 ] addr,
    input clk
 );
    reg [ 31 : 0 ] ram[ 0 : 127 ];
@@ -8,5 +8,5 @@ module BlackBoxSinglePortRom(
       $readmemh("src/main/resources/mem.txt", ram);
 
    always @( posedge clk )
-      q <= ram[ addr ];
+      q <= ram[ addr[ 8 : 2 ] ];
 endmodule

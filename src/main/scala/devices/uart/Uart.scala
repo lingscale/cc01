@@ -42,7 +42,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
   val txdata_data = Reg(UInt(8.W))
   val txdata = Cat(txdata_full, 0.U(13.W), txdata_data)
 
-  val div_div = Reg(UInt(16.W))  // 24.576M / ( 425 + 1 ) = 57690, 0.16% error to 57600
+  val div_div = Reg(UInt(16.W))   // 11.2896M / ( 195 + 1 ) = 57600, 0.0% error to 57600; 24.576M / ( 425 + 1 ) = 57690, 0.16% error to 57600; 33.8688M / ( 587 + 1 ) = 57600, 0.0% error to 57600; 50M / ( 867 + 1 ) = 57603.69, 0.006% error to 57600.
   val div = Cat(0.U(16.W), div_div)
 
   val counter = Reg(UInt(16.W))

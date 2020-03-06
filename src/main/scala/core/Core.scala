@@ -44,7 +44,6 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
   ifu_spl.io.master <> ifu_buffer.io.slave
   ifu_spl.io.spl_id := Mux(datapath.io.ifu.cmd.bits.addr === AddrRegion.ITCM_ADDR, 0.U, 1.U)
   itcm.io.ifu <> ifu_spl.io.slave(0)
-  itcm.io.ifu.cmd.bits.addr := ifu_spl.io.slave(0).cmd.bits.addr >> 2
   biu.io.ifu <> ifu_spl.io.slave(1)
 
   // bypass lsu command channel here because: the ready signal (fe_ready) from execute stage will back-pressure the ifetch
@@ -58,7 +57,6 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
                        Mux(datapath.io.lsu.cmd.bits.addr === AddrRegion.ITCM_ADDR, 1.U, 2.U))
   dtcm.io <> lsu_spl.io.slave(0)
   itcm.io.lsu <> lsu_spl.io.slave(1)
-  itcm.io.lsu.cmd.bits.addr := lsu_spl.io.slave(1).cmd.bits.addr >> 2
   biu.io.lsu <> lsu_spl.io.slave(2)
 
   io.ppi  <> biu.io.ppi

@@ -7,7 +7,9 @@
 
 _start:
     li t1, DIV_ADDR
-    li t2, 425
+    # 425, 57600 for 24.576M
+    # 587, 57600 for 33.8688M
+    li t2, 587
     sw t2, 0(t1)
     li t1, TXDATA_ADDR
     li t2, 0b10110111

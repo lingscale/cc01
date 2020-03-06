@@ -4,19 +4,19 @@ import chisel3._
 import chisel3.util._
 import lingscale.cc01.config.{Field, Parameters}
 
-class BlackBoxSinglePortRom extends BlackBox with HasBlackBoxResource {
+class BlackBoxRom extends BlackBox with HasBlackBoxResource {
   val io = IO(new Bundle{
     val q = Output(UInt(32.W))
-    val addr = Input(UInt(7.W))
+    val addr = Input(UInt(32.W))
     val clk = Input(Clock())
   })
-  addResource("/BlackBoxSinglePortRom.v")
+  addResource("/BlackBoxRom.v")
 }
 
 class Rom(implicit val p: Parameters) extends Module {
   val io = IO(Flipped(new IcbIO))
 
-  val ram = Module(new BlackBoxSinglePortRom)
+  val ram = Module(new BlackBoxRom)
 
   ram.io.addr := io.cmd.bits.addr
   ram.io.clk := clock
