@@ -29,19 +29,19 @@ trait ItcmParams {
 class Tcm(tcm_ram_addr_width: Int, tcm_ram_depth: Int, allowCombLoopDet: Boolean)(implicit val p: Parameters) extends Module {
   val io = IO(Flipped(new IcbIO))
 
-  val ram = Module(new RamMask(tcm_ram_addr_width, tcm_ram_depth))
-//  val ram = Module(new Ram(tcm_ram_addr_width, tcm_ram_depth))  // use blackbox instantiate iCE40UP5K SPRAM
+//  val ram = Module(new RamMask(tcm_ram_addr_width, tcm_ram_depth))
+  val ram = Module(new Ram(tcm_ram_addr_width, tcm_ram_depth))  // use blackbox instantiate iCE40UP5K SPRAM
   
   ram.io.addr   := io.cmd.bits.addr
   ram.io.read   := io.cmd.bits.read && io.cmd.fire
   ram.io.dataIn := io.cmd.bits.wdata
   ram.io.mask   := io.cmd.bits.wmask
+  ram.io.cs     := io.cmd.fire
  
   if (allowCombLoopDet)
     ram.io.write  := !io.cmd.bits.read && io.cmd.fire  // comb loop for ifu. how to fix it?
   else
-    ram.io.write  := !io.cmd.bits.read
-  //  ram.io.write  := !io.cmd.bits.read && io.cmd.fire  // use blackbox instantiate iCE40UP5K SPRAM, no comb loop for ifu.
+    ram.io.write  := !io.cmd.bits.read  // now fix this by disable wmask signal when not write to avoid write mistaken
 
   io.rsp.bits.rdata := ram.io.dataOut
   io.rsp.bits.err   := false.B

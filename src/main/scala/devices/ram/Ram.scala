@@ -11,6 +11,7 @@ class BlackBoxSpram extends BlackBox with HasBlackBoxResource {
     val read    = Input(Bool())
     val write   = Input(Bool())
     val mask    = Input(UInt(4.W))
+    val cs      = Input(Bool())
     val clk     = Input(Clock())
   })
   addResource("/BlackBoxSpram.v")
@@ -23,6 +24,7 @@ class RamIO(val addr_width: Int) extends Bundle {
   val read    = Input(Bool())
   val write   = Input(Bool())
   val mask    = Input(UInt(4.W))
+  val cs      = Input(Bool())
 }
 
 class Ram(val addr_width: Int, val ram_depth: Int) extends Module {   // Single-ported SRAM
@@ -38,6 +40,7 @@ class Ram(val addr_width: Int, val ram_depth: Int) extends Module {   // Single-
   ram.io.read   := io.read
   ram.io.write  := io.write
   ram.io.mask   := io.mask
+  ram.io.cs     := io.cs
   ram.io.clk    := clock
 
 }

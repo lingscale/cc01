@@ -10,6 +10,7 @@ class RamMaskIO(val addr_width: Int) extends Bundle {
   val read    = Input(Bool())
   val write   = Input(Bool())
   val mask    = Input(UInt(4.W))
+  val cs      = Input(Bool())
 }
 
 class RamMask(val addr_width: Int, val ram_depth: Int) extends Module {   // Single-ported SRAM

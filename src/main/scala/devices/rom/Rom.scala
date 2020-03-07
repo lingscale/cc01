@@ -8,6 +8,7 @@ class BlackBoxRom extends BlackBox with HasBlackBoxResource {
   val io = IO(new Bundle{
     val q = Output(UInt(32.W))
     val addr = Input(UInt(32.W))
+    val read = Input(Bool())
     val clk = Input(Clock())
   })
   addResource("/BlackBoxRom.v")
@@ -19,6 +20,7 @@ class Rom(implicit val p: Parameters) extends Module {
   val ram = Module(new BlackBoxRom)
 
   ram.io.addr := io.cmd.bits.addr
+  ram.io.read := io.cmd.bits.read && io.cmd.fire
   ram.io.clk := clock
 
   io.rsp.bits.rdata := ram.io.q

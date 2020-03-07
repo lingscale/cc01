@@ -442,7 +442,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   io.lsu.cmd.bits.wdata := regFile.io.rs2 << (alu.io.out(1) << 4.U | alu.io.out(0) << 3.U)
   io.lsu.cmd.bits.wmask := Mux(io.ctrl.st_type === ST_SW, "b1111".U(4.W),
                            Mux(io.ctrl.st_type === ST_SH, "b0011".U(4.W) << alu.io.out(1, 0).asUInt,
-                           Mux(io.ctrl.st_type === ST_SB, "b0001".U(4.W) << alu.io.out(1, 0).asUInt, "b1111".U(4.W))))
+                           Mux(io.ctrl.st_type === ST_SB, "b0001".U(4.W) << alu.io.out(1, 0).asUInt, "b0000".U(4.W))))
 
   al_ready := io.lsu.cmd.ready && lsinfo_queue.io.enq.ready
 
