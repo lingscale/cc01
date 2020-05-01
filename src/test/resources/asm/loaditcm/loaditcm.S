@@ -7,7 +7,7 @@
 _start:
     li s0, SOURCE_ADDR
     li s1, ITCM_ADDR
-    li t1, 55
+    li t1, 1012 # 1024 - 0x30
  1: lw t2, 0(s0)
     sw t2, 0(s1)
     addi s0, s0, 4

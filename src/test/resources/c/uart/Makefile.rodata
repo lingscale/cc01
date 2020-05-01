@@ -1,0 +1,16 @@
+uart_term.bin : crt0.S uart_term.c
+	riscv32-unknown-elf-objdump -D -m riscv -M no-aliases -s uart_term.elf > uart_term_rodata.dump
+	tail -n +18 uart_term_rodata.dump > rodata_1.txt
+	head -n +16 rodata_1.txt > rodata_2.txt
+	cut -c11-45 rodata_2.txt > rodata_3.txt
+	#vi :g/ /s//\r/g
+	#cat rodata_3.txt | rev > rodata_4.txt
+	cut -c1-2 rodata_3.txt > rodata_10.txt
+	cut -c3-4 rodata_3.txt > rodata_32.txt
+	cut -c5-6 rodata_3.txt > rodata_54.txt
+	cut -c7-8 rodata_3.txt > rodata_76.txt
+	paste -d '\0' rodata_76.txt rodata_54.txt rodata_32.txt rodata_10.txt > rodata_4.txt
+
+
+clean :
+	rm -f *.dump *.txt

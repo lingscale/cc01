@@ -4,24 +4,32 @@
 
 int main() {
 
-   //int a[] = { 99, 99, 48, 49, 32, 104, 32, 98, 32, 108, 105, 110, 103, 115, 99, 97, 108, 101, 32,  105, 99, 114, 111, 115, 121, 115, 116, 101, 109 }; 
-   int a[] = { 99, 99, 48, 49 };
+   const char * cc01_msg = "\
+Welcome to cc01!\r\n\
+cc01 is a simple RISC written in chisel3.\r\n\
+It only supports 32bits integer instructions.\r\n\
+cc means chisel cat, or something else, or just cc.\r\n\
+Never mind, just a name.\r\n\
+Feel free, and first of all, appreciated, to point out bugs.\r\n\
+\r\n\
+";
 
    int i;
    int rdata;
-
 
    UART_DIV_ADDR = 195; // 57600 for 11.2896M
    //UART_DIV_ADDR = 425; // 57600 for 24.576M
    //UART_DIV_ADDR = 587; // 57600 for 33.8688M
    //UART_DIV_ADDR = 867;  // 57600 for 50M
 
-   for ( i = 0; i < 4; i++ ) {
-      UART_TXDATA_ADDR = a[ i ];
+   i = 0;
+   while ( cc01_msg[ i ] != '\0' ) {
+      UART_TXDATA_ADDR = cc01_msg[ i ];
       rdata = UART_TXDATA_ADDR;
       while ( rdata == 0x80000000 ) {
          rdata = UART_TXDATA_ADDR;
       };
+      i++;
    }
 
    return 0;
