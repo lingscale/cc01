@@ -8,6 +8,7 @@ import chisel3.util.experimental.loadMemoryFromFile
 
 class SocIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val tx = Output(Bool())
+  val rx = Input(Bool())
 }
 
 class Soc(implicit val p: Parameters) extends Module with CoreParams {
@@ -24,7 +25,7 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
   core.io.tmr_irq := false.B
 
   io.tx := uart.io.tx
-  uart.io.rx := DontCare
+  uart.io.rx := io.rx
 
   core.io.ppi <> uart.io.icb
   core.io.mem <> rom.io

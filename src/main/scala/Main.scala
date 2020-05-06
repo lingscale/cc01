@@ -22,6 +22,7 @@ object Main extends App {
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Datapath()(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Dtcm()(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Core()(params)))
+  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Uart_fifo(8)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Uart(0x10013000)))
   val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Soc()(params)))
 

@@ -15,5 +15,6 @@ class SocUnitTester(c: Soc) extends PeekPokeTester(c) {
   //step(1800)
   //step(6800)
   //step(40000)
-  step(80000)
+  //step(80000)
+  step(700000)
 }
