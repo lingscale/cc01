@@ -9,10 +9,10 @@ import lingscale.cc01.config.{Field, Parameters}
 class BiuIO(implicit p: Parameters) extends Bundle {
   val lsu = Flipped(new IcbIO)  // load store unit
   val ifu = Flipped(new IcbIO)  // instruction fetch unit
-  val ppi  = new IcbIO  // private perpheral interface
-  val clic = new IcbIO  // core local interrupt controller
-  val plic = new IcbIO  // platform-level interrupt controller
-  val mem  = new IcbIO
+  val ppi   = new IcbIO  // private perpheral interface
+  val clint = new IcbIO  // core local interrupt controller
+  val plic  = new IcbIO  // platform-level interrupt controller
+  val mem   = new IcbIO
   override def cloneType =
     new BiuIO().asInstanceOf[this.type]
 }
@@ -37,13 +37,13 @@ class Biu(implicit val p: Parameters) extends Module with HasIcbParameters {
 
   slave_spl.io.spl_id := Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.MEM_ADDR, 0.U,
                          Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.PPI_ADDR, 1.U,
-                         Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.CLIC_ADDR, 2.U,
+                         Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.CLINT_ADDR, 2.U,
                          Mux(biu_buffer.io.slave.cmd.bits.addr === AddrRegion.PLIC_ADDR, 3.U, 4.U))))
 
-  io.mem  <> slave_spl.io.slave(0)
-  io.ppi  <> slave_spl.io.slave(1)
-  io.clic <> slave_spl.io.slave(2)
-  io.plic <> slave_spl.io.slave(3)
+  io.mem   <> slave_spl.io.slave(0)
+  io.ppi   <> slave_spl.io.slave(1)
+  io.clint <> slave_spl.io.slave(2)
+  io.plic  <> slave_spl.io.slave(3)
 
   val biu_err = Wire(new IcbIO)
   biu_err  <> slave_spl.io.slave(4)

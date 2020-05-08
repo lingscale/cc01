@@ -40,14 +40,14 @@ object CSR {
   val mcycleh    = 0xB80.U(12.W)  // Upper 32 bits of mcycle, RV32I only
   val minstreth  = 0xB82.U(12.W)  // Upper 32 bits of minstret, RV32I only
   // Machine Counter Setup
-  val mcounterinhibit = 0x320.U(12.W) // Machine counter-inhibit register
+  val mcountinhibit = 0x320.U(12.W) // Machine counter-inhibit register
 /*
   val regs = List(  // for CSR tests
     mvendorid, marchid, mimpid, mhartid,
     mstatus, misa, mie, mtvec, mcounteren,
     mscratch, mepc, mcause, mtval, mip,
     mcycle, minstret, mcycleh, minstreth,
-    mcounterinhibit)
+    mcountinhibit)
 */
 }
 
@@ -83,6 +83,9 @@ class CSRIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val MSIE = Output(Bool())
   val MTIE = Output(Bool())
   val MIE  = Output(Bool())
+  val ext_irq = Input(Bool())
+  val sft_irq = Input(Bool())
+  val tmr_irq = Input(Bool())
   val excp = Input(Bool())
   val cause = Input(UInt(xlen.W))
   val errpc = Input(UInt(xlen.W))
@@ -161,8 +164,8 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
   // Machine Counter-Enable Register (mcounteren)
   val mcounteren = 0.U(xlen.W)  // availability of performance-monitoring counters to the next-lowest priviledged mode
 
-  // Machine Counter-Inhibit Register (mcounterinhibit)
-  val mcounterinhibit ="hFFFFFFFF".U(xlen.W)  // set to inhibit counter increment
+  // Machine Counter-Inhibit Register (mcountinhibit)
+  val mcountinhibit ="hFFFFFFFF".U(xlen.W)  // set to inhibit counter increment
 
 
   // Machine Scratch Register (mscratch)
@@ -196,7 +199,7 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
     BitPat(CSR.minstret)        -> minstret,
     BitPat(CSR.mcycleh)         -> mcycleh,
     BitPat(CSR.minstreth)       -> minstreth,
-    BitPat(CSR.mcounterinhibit) -> mcounterinhibit
+    BitPat(CSR.mcountinhibit) -> mcountinhibit
   )
 
   val csr_addr = io.inst(31, 20)
@@ -219,6 +222,9 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
     mtval := io.trapvalue
     MIE := false.B  // mstatus.MIE
     MPIE := MIE  // mstatus.MPIE
+    MTIP := io.tmr_irq
+    MSIP := io.sft_irq
+    MEIP := io.ext_irq
   } .elsewhen (io.ret) {
     MIE := MPIE
     MPIE := true.B

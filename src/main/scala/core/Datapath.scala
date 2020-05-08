@@ -582,6 +582,10 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
                                              Mux(lsu_excp_flush_req && !lsinfo_queue.io.deq.bits.ld_type.orR, Cause.StoreAccessFault,
                                              Mux(alu_excp_flush_req && io.ctrl.ecall, Cause.EcallMMode, Cause.Reserved))))))))))
 
+  csr.io.ext_irq := io.ext_irq
+  csr.io.sft_irq := io.sft_irq
+  csr.io.tmr_irq := io.tmr_irq
+
   csr.io.excp := narrow_excp_en || narrow_intrp_en
 
   csr.io.cause := Mux(narrow_intrp_en, intrp_cause, excp_cause)

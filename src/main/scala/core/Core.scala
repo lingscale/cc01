@@ -16,10 +16,10 @@ class CoreIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val ext_irq = Input(Bool())
   val sft_irq = Input(Bool())
   val tmr_irq = Input(Bool())
-  val ppi  = new IcbIO   // private perpheral interface
-  val clic = new IcbIO   // core local interrupt controller
-  val plic = new IcbIO   // platform-level interrupt controller
-  val mem  = new IcbIO
+  val ppi   = new IcbIO  // private perpheral interface
+  val clint = new IcbIO  // core local interrupts controller
+  val plic  = new IcbIO  // platform-level interrupt controller
+  val mem   = new IcbIO
 }
 
 class Core(implicit val p: Parameters) extends Module with CoreParams {
@@ -59,10 +59,10 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
   itcm.io.lsu <> lsu_spl.io.slave(1)
   biu.io.lsu <> lsu_spl.io.slave(2)
 
-  io.ppi  <> biu.io.ppi
-  io.clic <> biu.io.clic
-  io.plic <> biu.io.plic
-  io.mem  <> biu.io.mem
+  io.ppi   <> biu.io.ppi
+  io.clint <> biu.io.clint
+  io.plic  <> biu.io.plic
+  io.mem   <> biu.io.mem
 
 }
 
