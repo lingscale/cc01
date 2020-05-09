@@ -12,10 +12,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
     val icb = Flipped(new IcbIO)
     val tx = Output(Bool())
     val rx = Input(Bool())
-    val txie = Output(Bool())
-    val rxie = Output(Bool())
-    val txip = Output(Bool())
-    val rxip = Output(Bool())
+    val uart_irq = Output(Bool())
   })
 
   val txdata_addr = (base_addr + 0x00).asUInt  // transmit data register
@@ -238,10 +235,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
 
 
 
-  io.txie := ie_txwm
-  io.rxie := ie_rxwm
-  io.txip := ip_txwm
-  io.rxip := ip_rxwm
-
   io.tx := tx
+
+  io.uart_irq := (ie_txwm && ip_txwm) || (ie_rxwm && ip_rxwm)
 }

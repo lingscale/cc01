@@ -19,35 +19,33 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
 //  loadMemoryFromFile(core.itcm.tcm.ram.mem, "src/test/resources/mem.txt")
 
   val clint = Module(new CLINT)
+  val plic  = Module(new PLIC)
   val uart  = Module(new Uart(UartAddr.UART_BASE_ADDR))
   val rom   = Module(new Rom)
-
-  core.io.ext_irq := false.B
 
   core.io.sft_irq := clint.io.sft_irq
   core.io.tmr_irq := clint.io.tmr_irq
   clint.io.clockB := io.clockB
+
+  core.io.ext_irq := plic.io.ext_irq
+  plic.io.irq1 := DontCare
+  plic.io.irq2 := DontCare
+  plic.io.irq3 := uart.io.uart_irq
 
   io.tx := uart.io.tx
   uart.io.rx := io.rx
 
   core.io.ppi   <> uart.io.icb
   core.io.clint <> clint.io.icb
+  core.io.plic  <> plic.io.icb
   core.io.mem   <> rom.io
 
 /*
-
   core.io.ppi.cmd.ready := true.B
   core.io.ppi.rsp.valid := false.B
   core.io.ppi.rsp.bits.rdata := 0.U(xlen.W)
   core.io.ppi.rsp.bits.err := true.B
 */
-
-  core.io.plic.cmd.ready := DontCare
-  core.io.plic.rsp.valid := DontCare
-  core.io.plic.rsp.bits.rdata := DontCare
-  core.io.plic.rsp.bits.err := DontCare
-
 }
 
 
