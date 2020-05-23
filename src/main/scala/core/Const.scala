@@ -33,3 +33,41 @@ object UartAddr {
   def IP_ADDR     = UART_BASE_ADDR + 0x14  // UART interrupt pending
   def DIV_ADDR    = UART_BASE_ADDR + 0x18  // Baud rate divisor
 }
+
+
+object PLICAddr {
+  def PLIC_BASE_ADDR = 0x0C000000
+
+  def irq1_priority    = PLIC_BASE_ADDR + 0x000004  // Interrupt source 1 priority
+  def irq2_priority    = PLIC_BASE_ADDR + 0x000008  // Interrupt source 2 priority
+  def irq3_priority    = PLIC_BASE_ADDR + 0x00000C  // Interrupt source 3 priority
+  def irq1023_priority = PLIC_BASE_ADDR + 0x000FFC  // Interrupt source 1023 priority
+
+  def pending  = PLIC_BASE_ADDR + 0x001000  // Interrupt Pending bit 0-31
+  def pendingX = PLIC_BASE_ADDR + 0x00107C  // Interrupt Pending bit 992-1023
+
+  def enable  = PLIC_BASE_ADDR + 0x002000  // Enable bits for sources 0-31 on context 0
+  def enableX = PLIC_BASE_ADDR + 0x00207F  // Enable bits for sources 992-1023 on context 0
+
+  def threshold      = PLIC_BASE_ADDR + 0x200000  // Priority threshold for context 0
+  def claim_complete = PLIC_BASE_ADDR + 0x200004  // Claim/complete for context 0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

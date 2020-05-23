@@ -517,6 +517,8 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
   csr.io.ret := io.ctrl.mret && branch_flush_req && branch_flush_ack
 
+  csr.io.instret := ac_valid && ac_ready && !branch_flush_req
+
   ac_branchslv_ready := !(io.ctrl.br || io.ctrl.mret || io.ctrl.fencei) ||
                         (Mux(branch_need_flush, branch_flush_ack, true.B) && !lsu_need_flush && !intrp_req)
 

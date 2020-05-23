@@ -91,6 +91,7 @@ class CSRIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val errpc = Input(UInt(xlen.W))
   val trapvalue = Input(UInt(xlen.W))
   val ret = Input(Bool())
+  val instret = Input(Bool())
 }
 
 class CSR(implicit val p: Parameters) extends Module with CoreParams {
@@ -156,17 +157,23 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
   // Hardware Performance Monitor
   // mcycle minstret mcycleh minstreth mhpmcounter3-mphmcounter31  mhpmcounter3h-mphmcounter31h
   // all should be implementd, but can hard-wire the counter and its corresponding event selector to 0
-  val mcycle    = 0.U(xlen.W)
-  val minstret  = 0.U(xlen.W)
-  val mcycleh   = 0.U(xlen.W)
-  val minstreth = 0.U(xlen.W)
+  val mcycle    = RegInit(0.U(xlen.W))
+  val minstret  = RegInit(0.U(xlen.W))
+  val mcycleh   = RegInit(0.U(xlen.W))
+  val minstreth = RegInit(0.U(xlen.W))
 
   // Machine Counter-Enable Register (mcounteren)
   val mcounteren = 0.U(xlen.W)  // availability of performance-monitoring counters to the next-lowest priviledged mode
 
   // Machine Counter-Inhibit Register (mcountinhibit)
-  val mcountinhibit ="hFFFFFFFF".U(xlen.W)  // set to inhibit counter increment
+  val CY = RegInit(false.B)
+  val IR = RegInit(false.B)
+  val mcountinhibit = Cat(0.U((xlen - 3).W), IR, 0.U(1.W), CY)  // set to inhibit counter increment
 
+  when ( !CY ) { mcycle := mcycle + 1.U }
+  when ( mcycle === ~0.U(xlen.W) ) { mcycleh := mcycleh + 1.U }
+  when ( io.instret && !IR ) { minstret := minstret + 1.U }
+  when ( minstret === ~0.U(xlen.W) ) { minstreth := minstreth + 1.U }
 
   // Machine Scratch Register (mscratch)
   val mscratch = Reg(UInt(xlen.W))
@@ -240,6 +247,9 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
       MTIE := wdata(7)
       MSIE := wdata(3)
       MEIE := wdata(11)
+    } .elsewhen(csr_addr === CSR.mcountinhibit) {
+      CY := wdata(0)
+      IR := wdata(2)
     } .elsewhen(csr_addr === CSR.mscratch) {
       mscratch := wdata
     } .elsewhen(csr_addr === CSR.mepc) {
@@ -248,6 +258,14 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
       mcause := wdata
     } .elsewhen(csr_addr === CSR.mtval) {
       mtval := wdata
+    } .elsewhen(csr_addr === CSR.mcycle) {
+      mcycle := wdata
+    } .elsewhen(csr_addr === CSR.minstret) {
+      minstret := wdata
+    } .elsewhen(csr_addr === CSR.mcycleh) {
+      mcycleh := wdata
+    } .elsewhen(csr_addr === CSR.minstreth) {
+      minstreth := wdata
     }
   }
 }
