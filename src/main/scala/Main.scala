@@ -26,7 +26,8 @@ object Main extends App {
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Uart(0x10013000)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new CLINT()(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new PLIC()(params)))
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Soc()(params)))
+  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Spi(0x10014000)))
+  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Soc()(params)))
 
   val writer = new FileWriter(new File(dir, s"${chirrtl.main}.fir"))
   writer write chirrtl.serialize
