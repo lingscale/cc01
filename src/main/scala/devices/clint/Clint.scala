@@ -6,15 +6,15 @@ import lingscale.cc01.config.Parameters
 
 // Core Local Interrupts Controller
 
-class CLINTIO(implicit val p: Parameters) extends Bundle with CoreParams {
+class ClintIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val icb = Flipped(new IcbIO)
   val sft_irq = Output(Bool())
   val tmr_irq = Output(Bool())
-  val clockB = Input(Clock())
+  val clockRTC = Input(Clock())
 }
 
-class CLINT(implicit val p: Parameters) extends Module with CoreParams {
-  val io = IO(new CLINTIO)
+class Clint(implicit val p: Parameters) extends Module with CoreParams {
+  val io = IO(new ClintIO)
 
   io.icb.cmd.ready := true.B
   io.icb.rsp.valid := true.B
@@ -81,7 +81,7 @@ class CLINT(implicit val p: Parameters) extends Module with CoreParams {
 
   val mtime_raw_cdc = Wire(UInt(64.W))
  
-  withClock (io.clockB) {
+  withClock (io.clockRTC) {
     val mtime_raw = RegInit(0.U(64.W))
     mtime_raw := mtime_raw + 1.U
     mtime_raw_cdc := mtime_raw

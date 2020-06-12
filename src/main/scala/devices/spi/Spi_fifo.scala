@@ -25,13 +25,16 @@ class Spi_fifo() extends Module {
   val empty = ptr_match && !maybe_full
   val full = ptr_match && maybe_full
 
-  when (io.write && !full) {
+  val write_ready = RegNext(!full, true.B)
+  val read_valid = RegNext(!empty, false.B)
+
+  when (io.write && write_ready) {
     buf(wr_ptr.value) := io.in
     number := number + 1.U
     wr_ptr.inc()
   }
 
-  when (io.read && !empty) {
+  when (io.read && read_valid) {
     number := number - 1.U
     rd_ptr.inc()
   }

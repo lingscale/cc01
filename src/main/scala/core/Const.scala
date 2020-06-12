@@ -7,8 +7,8 @@ object Const {
 //  def PC_RTVEC = "h80000000"
 //  def PC_TVEC  = "h80000004"
   def PC_RTVEC = "h20000000"
-  def PC_TVEC  = "h20000004"
-
+//  def PC_TVEC  = "h20000004"
+  def PC_TVEC  = "h80000004"
 }
 
 object AddrRegion {
@@ -23,6 +23,11 @@ object AddrRegion {
   def PLIC_ADDR  = BitPat("b00001100_????????_????????_????????")  // 0x0C00_0000 ~ 0x0CFF_FFFF
 }
 
+object PpiRegion {
+  def UART_ADDR = BitPat("b00010000_00000001_00110000_????????")  // 0x1001_3000 ~ 0x1001_30FF
+  def SPI_ADDR  = BitPat("b00010000_00000001_01000000_????????")  // 0x1001_4000 ~ 0x1001_40FF
+}
+
 object UartAddr {
   def UART_BASE_ADDR = 0x10013000
   def TXDATA_ADDR = UART_BASE_ADDR + 0x00  // Transmit data register
@@ -34,8 +39,27 @@ object UartAddr {
   def DIV_ADDR    = UART_BASE_ADDR + 0x18  // Baud rate divisor
 }
 
+object SpiAddr {
+  def SPI_BASE_ADDR = 0x10014000
+  val SCKDIV_ADDR  = SPI_BASE_ADDR + 0x00  // serial clock divisor
+  val SCKMODE_ADDR = SPI_BASE_ADDR + 0x04  // serial clock mode
+  val CSID_ADDR    = SPI_BASE_ADDR + 0x10  // chip select ID
+  val CSDEF_ADDR   = SPI_BASE_ADDR + 0x14  // chip select default
+  val CSMODE_ADDR  = SPI_BASE_ADDR + 0x18  // chip select mode
+  val DELAY0_ADDR  = SPI_BASE_ADDR + 0x28  // delay control 0
+  val DELAY1_ADDR  = SPI_BASE_ADDR + 0x2C  // delay control 1
+  val FMT_ADDR     = SPI_BASE_ADDR + 0x40  // frame format
+  val TXDATA_ADDR  = SPI_BASE_ADDR + 0x48  // Tx FIFO data
+  val RXDATA_ADDR  = SPI_BASE_ADDR + 0x4C  // Rx FIFO data
+  val TXMARK_ADDR  = SPI_BASE_ADDR + 0x50  // Tx FIFO watermark
+  val RXMARK_ADDR  = SPI_BASE_ADDR + 0x54  // Rx FIFO watermark
+  val FCTRL_ADDR   = SPI_BASE_ADDR + 0x60  // spi flash interfact control
+  val FFMT_ADDR    = SPI_BASE_ADDR + 0x64  // spi flash instruction format
+  val IE_ADDR      = SPI_BASE_ADDR + 0x70  // spi interrupt enable
+  val IP_ADDR      = SPI_BASE_ADDR + 0x74  // spi interrupt pending
+}
 
-object PLICAddr {
+object PlicAddr {
   def PLIC_BASE_ADDR = 0x0C000000
 
   def irq1_priority    = PLIC_BASE_ADDR + 0x000004  // Interrupt source 1 priority

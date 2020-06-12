@@ -77,6 +77,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
     rxfifo_read := false.B
   }
 
+/*
   val div = RegInit(3.U(12.W))  // Divisor for serial clock. div_width bits wide.
   val sckdiv = Cat(0.U(20.W), div)  // Serial Clock Divisor Register (sckdiv)
 
@@ -110,7 +111,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === csid_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := csid
   }
-
+*/
   val csdef = RegInit("hffff_ffff".U(32.W))  // Chip Select Default Register (csdef)
 
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === csdef_addr) && !io.icb.cmd.bits.read) {
@@ -120,7 +121,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === csdef_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := csdef
   }
-
+/*
   val mode = RegInit(0.U(2.W))  // Chip Select Mode
   val csmode = Cat(0.U(30.W), mode)  // Chip Select Mode Register (csmode)
 
@@ -131,7 +132,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === csmode_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := csmode
   }
-
+*/
   val cssck = RegInit(1.U(8.W))  // CS to SCK Delay
   val sckcs = RegInit(1.U(8.W))  // SCK to CS Delay
   val delay0 = Cat(0.U(8.W), sckcs, 0.U(8.W), cssck)  // Delay Control Register 0 (delay0)
@@ -144,7 +145,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === delay0_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := delay0
   }
-
+/*
   val intercs = RegInit(1.U(8.W))  // Minimum CS inacctive time
   val interxfr = RegInit(0.U(8.W))  // Maximum interframe delay
   val delay1 = Cat(0.U(8.W), interxfr, 0.U(8.W), intercs)  // Delay Control Register 1 (delay1)
@@ -252,15 +253,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === ffmt_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := ffmt
   }
-
-
-
-/*
-  val rxbuf = Reg(Vec(8, Bool()))
-  rxfifo.io.in := rxbuf.asUInt
-  val rxbuf_ptr = Reg(UInt(4.W))
 */
-
 
   val rxbuf = Reg(Vec(8, Bool()))
   rxfifo.io.in := rxbuf.asUInt
@@ -304,7 +297,11 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
       }
     }
     is (s_TXDATA) {
-      when (!SCK) {
+      when (txfifo.io.empty) {
+        txfifo_read := false.B
+        s_state := s_RXDATA
+      }
+      .elsewhen (!SCK) {
         SCK := true.B
         txfifo_read := false.B
       }
@@ -312,35 +309,40 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
         SCK := false.B
         ptr := ptr - 1.U
       }
-      .elsewhen (!txfifo.io.empty) {
+      .elsewhen (txfifo.io.number === 1.U) {
         SCK := false.B
         txfifo_read := true.B
         ptr := 7.U
+        s_state := s_RXDATA
       }
       .otherwise {
         SCK := false.B
+        txfifo_read := true.B
         ptr := 7.U
-        s_state := s_RXDATA
       }
     }
     is (s_RXDATA) {
       when (csdef === "hffff_ffff".U) {
         SCK := false.B
+        txfifo_read := false.B
         rxfifo_write := false.B
+        ptr := 0.U
         s_state := s_SCKCS
       }
-      .elsewhen (SCK) {
-        SCK := false.B
+      .elsewhen (rxfifo.io.full) {
+      }
+      .elsewhen (!SCK) {
+        SCK := true.B
+        txfifo_read := false.B
+        rxbuf(ptr) := MISO
         rxfifo_write := false.B
       }
       .elsewhen (ptr =/= 0.U) {
-        SCK := true.B
-        rxbuf(ptr) := MISO
+        SCK := false.B
         ptr := ptr - 1.U
       }
       .otherwise {
-        SCK := true.B
-        rxbuf(ptr) := MISO
+        SCK := false.B
         rxfifo_write := true.B
         ptr := 7.U
       }
