@@ -11,7 +11,10 @@ class SocUnitTester(c: Soc) extends PeekPokeTester(c) {
 
   private val Soc = c
 
+  //step(25)
+  //step(32)
   //step(64)
+  //step(200)
   //step(1800)
   //step(6800)
   //step(40000)

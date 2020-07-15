@@ -54,6 +54,10 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
   private val ptr_match = dis_ptr.value === ret_ptr.value
   private val empty = ptr_match && !maybe_full
   private val full = ptr_match && maybe_full
+
+  private val dis_ready = !full
+  private val ret_ready = !empty
+
   private val do_dis = io.dis_valid && io.dis_ready
   private val do_ret = io.ret_valid && io.ret_ready
 
@@ -82,13 +86,12 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
     maybe_full := do_dis
   }
 
-  io.dis_ready := !full
-  io.ret_ready := !empty
-
   io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs1idx).reduce(_ || _)
   io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs2idx).reduce(_ || _)
   io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
 
+  io.dis_ready := dis_ready
+  io.ret_ready := ret_ready
   io.empty := empty
 }
 

@@ -2,6 +2,9 @@ package lingscale.cc01.core
 
 import chisel3._
 import chisel3.util._
+import chisel3.experimental.{DataMirror, Direction, requireIsChiselType}
+import chisel3.internal.naming._  // can't use chisel3_ version because of compile order
+
 import lingscale.cc01.config.Parameters
 
 class OitfIo(implicit val p: Parameters) extends Bundle with CoreParams {
@@ -27,46 +30,70 @@ class OitfIo(implicit val p: Parameters) extends Bundle with CoreParams {
   val empty = Output(Bool())
 }
 
-class Oitf(implicit val p: Parameters) extends Module with CoreParams {
+class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with CoreParams {
+  require(entries > 0, "Oitf must have posetive number of entries")
+
   val io = IO(new OitfIo)
 
-  val rs1en = Reg(Bool())
-  val rs2en = Reg(Bool())
-  val rdwen = Reg(Bool())
-  val rs1idx = Reg(UInt(5.W))
-  val rs2idx = Reg(UInt(5.W))
-  val rdidx  = Reg(UInt(5.W))
-  val pc = Reg(UInt(xlen.W))
-
-  val empty = RegInit(true.B)
-
-  when (io.dis_valid && io.dis_ready) {
-    rs1en := io.dis_rs1en
-    rs2en := io.dis_rs2en
-    rdwen := io.dis_rdwen
-    rs1idx := io.dis_rs1idx
-    rs2idx := io.dis_rs2idx
-    rdidx  := io.dis_rdidx
-    pc := io.dis_pc
+  class out_info extends Bundle {
+    val rs1en = Bool()
+    val rs2en = Bool()
+    val rdwen = Bool()
+    val rs1idx = UInt(5.W)
+    val rs2idx = UInt(5.W)
+    val rdidx  = UInt(5.W)
+    val pc = UInt(xlen.W)
   }
 
-  when (io.ret_valid && io.ret_ready) {
-    empty := true.B
+  private val buf = Reg(Vec(entries, new out_info))
+  private val buf_vld = RegInit(VecInit(Seq.fill(entries)(false.B)))
+  private val dis_ptr = Counter(entries)
+  private val ret_ptr = Counter(entries)
+  private val maybe_full = RegInit(false.B)
+
+  private val ptr_match = dis_ptr.value === ret_ptr.value
+  private val empty = ptr_match && !maybe_full
+  private val full = ptr_match && maybe_full
+
+  private val dis_ready = !full
+  private val ret_ready = !empty
+
+  private val do_dis = io.dis_valid && io.dis_ready
+  private val do_ret = io.ret_valid && io.ret_ready
+
+  when (do_dis) {
+    buf(dis_ptr.value).rs1en := io.dis_rs1en
+    buf(dis_ptr.value).rs2en := io.dis_rs2en
+    buf(dis_ptr.value).rdwen := io.dis_rdwen
+    buf(dis_ptr.value).rs1idx := io.dis_rs1idx
+    buf(dis_ptr.value).rs2idx := io.dis_rs2idx
+    buf(dis_ptr.value).rdidx  := io.dis_rdidx
+    buf(dis_ptr.value).pc := io.dis_pc
+    buf_vld(dis_ptr.value) := true.B
+    dis_ptr.inc()
   }
-  when (io.dis_valid && io.dis_ready) {
-    empty := false.B
+
+  when (do_ret) {
+    buf_vld(ret_ptr.value) := false.B
+    ret_ptr.inc()
   }
 
-  io.dis_ready := empty || io.ret_valid
-  io.ret_ready := !empty
+  io.ret_rdwen := buf(ret_ptr.value).rdwen
+  io.ret_rdidx := buf(ret_ptr.value).rdidx
+  io.ret_pc := buf(ret_ptr.value).pc
 
-  io.oitfrd_match_disrs1 := !empty && io.dis_rs1en && rdwen && (rdidx === io.dis_rs1idx)
-  io.oitfrd_match_disrs2 := !empty && io.dis_rs2en && rdwen && (rdidx === io.dis_rs2idx)
-  io.oitfrd_match_disrd  := !empty && io.dis_rdwen && rdwen && (rdidx === io.dis_rdidx)
+  when (do_dis =/= do_ret) {
+    maybe_full := do_dis
+  }
 
-  io.ret_rdwen := rdwen
-  io.ret_rdidx := rdidx
-  io.ret_pc := pc
+  io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs1idx).reduce(_ || _)
+  io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs2idx).reduce(_ || _)
+  io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
 
+  io.dis_ready := dis_ready
+  io.ret_ready := ret_ready
   io.empty := empty
 }
+
+
+

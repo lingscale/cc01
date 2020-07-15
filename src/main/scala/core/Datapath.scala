@@ -26,7 +26,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   val oitf    = Module(new Oitf)
 
   /***** Fetch Registers *****/
-  val pc = RegInit(Const.PC_RTVEC.U(xlen.W))
+  val pc = RegInit(Const.PC_RTVEC.U(xlen.W) - 4.U)
   val misalign = RegInit(false.B)
 
   /***** Fetch / Execute Registers *****/
@@ -100,62 +100,77 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   val bjp_pc_add_op1 = Wire(UInt(xlen.W))
   val bjp_pc_add_op2 = Wire(UInt(xlen.W))
 
-  // when ifu response invalid, the response data may change, for example, the lsu reads data from the same memory area
-  // the ifu just accessed (e.g itcm), so need keep npc invariable to prevent ifu response data (inst) generate wrong
-  // ifu access address (and its value was saved in pc by ifu.rsp.fire), that's why !io.ifu.rsp.valid exists here. in
-  // fact, that's a kind of bubble, or pipeline stall.
   val npc_add_op1 = Mux(pipe_flush_req,     pipe_flush_add_op1,
                     Mux(dly_pipe_flush_req, pc,
-                    Mux(!io.ifu.rsp.valid,  pc,
                     Mux(bjp_req,            bjp_pc_add_op1,
-                                            pc))))
+                                            pc)))
 
   val npc_add_op2 = Mux(pipe_flush_req,     pipe_flush_add_op2,
                     Mux(dly_pipe_flush_req, 0.U,
-                    Mux(!io.ifu.rsp.valid,  0.U,
                     Mux(bjp_req,            bjp_pc_add_op2,
-                                            4.U))))
+                                            4.U)))
 
   val npc = npc_add_op1 + npc_add_op2
 
   val inst = io.ifu.rsp.bits.rdata
 
-  // When to fetch instruction? There's demand, and last request has finished:
+  // When to fetch instruction? There's demand, and the last fetch has finished or being finishing:
   //   1. not waiting & not halting, or flush request or flush request pending, then continues fetching, and
   //   2. last instruction fetch response has returned, or being returning, marked by ifu_out_flag
   val ifu_out_flag = RegInit(false.B)
   when (io.ifu.rsp.fire) { ifu_out_flag := false.B }
   when (io.ifu.cmd.fire) { ifu_out_flag := true.B }
 
+  val ifu_no_outs = !ifu_out_flag || io.ifu.rsp.valid
+        // Here we use io.ifu.rsp.valid rather than the out_flag_clr ( io.ifu.rsp.fire ) because
+        //   as long as the rsp_valid is asserting then means last request have returned the
+        //   response back, in WFI case, we cannot expect it to be handshaked ( otherwise deadlock ) /* wfi stops pipeline, means following instruction can't be accepted, so ifu rsp channel can't handshake */
+
   val jalr_wait = Wire(Bool())
   val pipe_flush_req_real = Wire(Bool())
+
+
+
+/*
+
+
+  val ifu_req_valid_pre = (!jalr_wait && !wfi_halt_ifu_req && !RegNext(reset.asBool, true.B)) ||  || pipe_flush_req_real
+
+  val new_req_condi = !ifu_out_flag || io.ifu.rsp.fire
+
+  io.ifu.cmd.valid := ifu_req_valid_pre && new_req_condi
+
+*/
+
+
   io.ifu.cmd.valid := ((!jalr_wait && !wfi_halt_ifu_req) || pipe_flush_req_real) && (!ifu_out_flag || io.ifu.rsp.fire)
   io.ifu.cmd.bits.addr := npc
   io.ifu.cmd.bits.read := true.B
   io.ifu.cmd.bits.wdata := DontCare
   io.ifu.cmd.bits.wmask := DontCare
 
-  // When to update pc?
+  // When to update pc (which according to instruction fetched from ifu) ?
   //   1. the instruction fetch request being accepted or
   //   2. pipe flush can't be accepted (ifu.rsp not ready, back pressure ifu.cmd ready, new ifu.cmd requst can't be
-  //      accepted), remember the flush pc temporary, to be used by dly_pipe_flush_req or
-  //   3. when ifu.rsp.fire, to keep npc temporary, in case next ifu.rsp.ready invalid.
-  when (io.ifu.cmd.fire || pipe_flush_hsked || io.ifu.rsp.fire) { pc := npc }
+  //      accepted), remember the flush pc temporary, to be used by dly_pipe_flush_req
+  when (io.ifu.cmd.fire || pipe_flush_hsked) { pc := npc }
 
   when (io.ifu.cmd.fire) { when (npc(1, 0).orR) { misalign := true.B } .otherwise { misalign := false.B } }
 
   // When is ready to accept instruction? Instruction register is ready:
-  //   1. fe_inst is empty, or bing clearing, and not jalr_wait, or
+  //   1. fe_inst is empty, or bing clearing, and not jalr_wait, and ifu should be ready to accept new fetch request ('cause
+  //      ifu.rsp.bits.rdata may change and then generate wrong npc, so needs ifu be ready, accept new instruction and generate
+  //      new instruction fetch address and send fetch request to ifu simultaneously), or
   //   2. pipe flush, which means when flush, just read current returned instruction and
   //      throw it (fe_valid deasserted by pipe_flush_hasked, and when pipe_flush_req_real, fe_valid won't
-  //      be asserted, and fe_inst won't be update too), to prepare to accept flush address instruction.
+  //      be asserted, and fe_inst won't be updated too), to be prepared to accept flush address instruction.
   // Note back pressure here:
   //   1. the following stage (execute stage) hasn't finished process last instruction (marked by fe_ready
   //      desasseted), do not accept new instruction
-  //   2. ifu not ready to accept, do not accept. for example when access qspi flash etc. by BIU (bus
-  //      interface unit), need multiple cycles to return instruction, i.e. control instruction fetch rythm by
+  //   2. ifu not ready to accept, do not accept. for example when access spi flash etc. by BIU (bus
+  //      interface unit), needs multiple cycles to return instruction, i.e. control instruction fetch rythm by
   //      valid-ready mechanism (rsp ready back press cmd ready).
-  io.ifu.rsp.ready := ((!fe_valid || (fe_valid && fe_ready)) && !jalr_wait) || pipe_flush_req_real
+  io.ifu.rsp.ready := ((!fe_valid || (fe_valid && fe_ready)) && !jalr_wait && io.ifu.cmd.ready) || pipe_flush_req_real
 
   // When to update fe_inst? New instruction fetched and no pipe flush. Note valid flag fe_valid.
   when (io.ifu.rsp.fire && !pipe_flush_req_real) { fe_inst := io.ifu.rsp.bits.rdata }
@@ -181,8 +196,8 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
   // fe_pc_vld records if fe_pc according with fe_insr, used when exception happens, as mepc
   // fe_pc_vld is used by the commit stage to check if current instruction is outputing a valid current PC
-  // to guarante the commit to flush pipeline safely, this vld only be asserted whenthere is a valid instruction here,
-  // otherwise, the commit stage may use wrong PC value to stored in mepc.
+  // to guarante the commit to flush pipeline safely, this vld only be asserted when there is a valid instruction here,
+  // otherwise, the commit stage may use wrong PC value to store in mepc.
   // Because asynochronous precise exception (interupt exception) need to use the next upcoming (not yet commited, i.e.
   //   fe_valid not asserted) instruction's PC for the mepc value, so we must wait next valid instruction coming and use
   //   its PC. The fe_pc_vld is just used to indicate next instruction's valid PC value.
@@ -222,12 +237,14 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   when (jalr_rs1en) { rs1xn_read_rf := true.B }
 
   jalr_rs1en := !rs1xn_read_rf && io.ifu.rsp.valid && io.pre_ctrl.jalr && inst(19, 16).orR && (!jalr_rs1xn_dep || jalr_rs1xn_dep_fe_inst_clr)
-  // When need read rs1 of register files, ifu should halt to prevent next pc's generation.
+
+  // When need read rs1 of register files, ifu should halt to prevent next pc's generation, and ifu rsp ready deasserted to not accept new instruction.
   jalr_wait := jalr_rs1x1_dep || jalr_rs1xn_dep || jalr_rs1en
 
   val br_prdt = io.pre_ctrl.br && inst(31).asBool
 
-  bjp_req := io.pre_ctrl.jal || io.pre_ctrl.jalr || br_prdt
+  // when reset, ifu rsp instruction is unknowen, bjp_req should be disabled to avoid wrong branch or jump.
+  bjp_req := (io.pre_ctrl.jal || io.pre_ctrl.jalr || br_prdt) && RegNext(!reset.asBool, false.B)
 
   bjp_pc_add_op1 := Mux(io.pre_ctrl.br,                               pc,
                     Mux(io.pre_ctrl.jal,                              pc,
@@ -241,7 +258,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
                     Mux((io.pre_ctrl.jalr && (inst(19, 15) === 1.U)), Cat(Fill(20, inst(31)), inst(31, 20)),
                                                                       Cat(Fill(20, inst(31)), inst(31, 20))))))
 
-  fe_br_prdt := br_prdt
+  when (io.ifu.rsp.fire && !pipe_flush_req_real) { fe_br_prdt := br_prdt }
 
 
   ///////////////////////////////////////////////////////////////////////////
@@ -249,13 +266,13 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   // instruction fetch unit will ackonwledge halt request when:
   //   halt_req asserted, halt_ack not asserted, instruction fetch request channel
   //   is ready, i.e. no outstanding transaction
-  // Note here uses io.ifu.rsp.valid, not io.ifu.rsp.fire, 'cause wfi prevent the excution
+  // Note here uses io.ifu.rsp.valid, instead of io.ifu.rsp.fire, 'cause wfi prevent the excution
   //   of then next following instruction, which hence can't be accepted by fe_inst, or means bug.
   //   And io.ifu.rsp.valid means last instruction fetch request have response back, meanwhile
   //   halt_req prevents new fetch request, means no fetch outstanding.
   //   (and remember, ifu just only have one outstanding, so io.ifu.rsp.valid means no out)
   when (wfi_halt_ifu_ack && !wfi_halt_ifu_req) { wfi_halt_ifu_ack := false.B }
-  when (wfi_halt_ifu_req && !wfi_halt_ifu_ack && (!ifu_out_flag || io.ifu.rsp.valid)) { wfi_halt_ifu_ack := true.B }
+  when (wfi_halt_ifu_req && !wfi_halt_ifu_ack && ifu_no_outs) { wfi_halt_ifu_ack := true.B }
   
 
   ///////////////////////////////////////////////////////////////////////////
@@ -268,7 +285,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   //   old flush request just be flushed. This may be happen when interrupt nesting or
   //   something, which will be dealt by software.
   // What does comb loop mean? exu waiting for ifu to accept flush request, and ifu
-  //   wait exu to finish exuction last insturction -- which generates flush request,
+  //   wait exu to finish last insturction's exuction -- which generates flush request,
   //   then fe_inst can't be clear, and ifu req can't fire, and can't accept flush
   //   request, so deadlock.
   pipe_flush_ack := true.B
@@ -336,8 +353,8 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   //   to longp but just directly commited, then it become a normal ALU instruction, and should
   //   check the WAW dependency, but this only happened when it is AMO or unaligned-uop, so
   //   ideally we dont need to worry about it, because
-  //     * We dont support AMO in 2 stage CPU here
-  //     * We dont support Unalign load-store in 2 stage CPU here, which
+  //     * We dont support AMO in this 2 stage CPU here
+  //     * We dont support Unalign load-store in this 2 stage CPU here, which
   //         will be triggered as exception, so will not really write-back
   //         into regfile
   // Nevertheless: using this condition only waiver the longpipe WAW case, that is, two
@@ -437,9 +454,9 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   lsinfo_queue.io.deq.ready := io.lsu.rsp.fire
 
   io.lsu.cmd.valid := al_valid && lsinfo_queue.io.enq.ready
-  io.lsu.cmd.bits.addr := alu.io.out
-  io.lsu.cmd.bits.read := io.ctrl.ld
-  io.lsu.cmd.bits.wdata := regFile.io.rs2 << (alu.io.out(1) << 4.U | alu.io.out(0) << 3.U)
+  io.lsu.cmd.bits.addr := Mux(io.lsu.cmd.valid, alu.io.out, 0.U)
+  io.lsu.cmd.bits.read := !io.ctrl.st
+  io.lsu.cmd.bits.wdata := Mux(io.ctrl.st, regFile.io.rs2 << (alu.io.out(1) << 4.U | alu.io.out(0) << 3.U), 0.U)
   io.lsu.cmd.bits.wmask := Mux(io.ctrl.st_type === ST_SW, "b1111".U(4.W),
                            Mux(io.ctrl.st_type === ST_SH, "b0011".U(4.W) << alu.io.out(1, 0).asUInt,
                            Mux(io.ctrl.st_type === ST_SB, "b0001".U(4.W) << alu.io.out(1, 0).asUInt, "b0000".U(4.W))))
@@ -466,7 +483,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   //  lc_valid := lsu_need_cmit && !oitf_empty && io.lsu.rsp.valid && Mux(lsu_need_wbck, lw_ready, true.B)
   //  lw_valid := lsu_need_wbck && !oitf_empty && io.lsu.rsp.valid && Mux(lsu_need_cmit, lc_ready, true.B)
   lc_valid := lsu_need_cmit && !oitf_empty && io.lsu.rsp.valid
-  lw_valid := lsu_need_wbck && !oitf_empty && io.lsu.rsp.valid
+  lw_valid := lsu_need_wbck && !oitf_empty && io.lsu.rsp.valid //&& oitf.io.ret_valid
 
   lo_valid := io.lsu.rsp.fire  // lsu to oitf
   oitf.io.ret_valid := lo_valid
@@ -533,16 +550,16 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
   // make sure the flush to IFU and halt to IFU not asserted at the same cycle
   wfi_halt_ifu_req := wfi_halt_req && !intrp_req_raw;
-  // To cut the comb loops, we dont use the clr signal here to qualify,
+  // To cut the comb loops, we dont use the clear signal here to qualify,
   //   the outcome is the halt-to-exu will be deasserted 1 cycle later than to-IFU
-  //   but it doesnt matter much.
+  //   but it doesn't matter much.
   wfi_halt_exu_req := wfi_halt_req;
 
   // there are three kinds of exceptions, priority top down
   //   lsu aligned access error exception
   //      asynochronous non-precise exception /* and fe_pc_vld? */
   //   interrupt exception
-  //     should wait oitf empty and pc_vald asserted
+  //     should wait oitf empty and pc_valid asserted
   //     as it is asynochronous precise exception, needs the next following (not yet commited) instruction's pc
   //     for mepc, so should wait fe_pc_vld asserted, which just indicates next instruction's pc value valid.
   //   alu exception, should wait oitf empty
@@ -556,7 +573,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
                        io.ctrl.ebreak ||  // used by debugger, synchronous exception (exception cause 3)
                        io.ctrl.ecall      // usually for operating system, synchronous exception (exception cause 11)
 
-  val lsu_excp_flush_req = lsu_need_flush   // Exclude the pc_vld for lsu, to just always make sure can always be accepted
+  val lsu_excp_flush_req = lsu_need_flush   // Exclude the pc_vld for lsu, to just make sure can always be accepted
   val intrp_excp_flush_req = intrp_req && oitf_empty && fe_pc_vld && !lsu_need_flush
   val alu_excp_flush_req = ac_excp_valid && alu_need_flush && oitf_empty && !intrp_req && !lsu_need_flush
 
@@ -588,7 +605,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   csr.io.sft_irq := io.sft_irq
   csr.io.tmr_irq := io.tmr_irq
 
-  csr.io.excp := narrow_excp_en || narrow_intrp_en
+  csr.io.excp := narrow_intrp_en || narrow_excp_en
 
   csr.io.cause := Mux(narrow_intrp_en, intrp_cause, excp_cause)
 
@@ -614,22 +631,27 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   // not every alu instruction needs write back, ld st instruction can write in the gap or just wait the gap
   // if depend happens, just need one extra clock. but if lsu has higher priority, it always waste one clock.
   // but unfortunately, otif can't enq when deqing, or get combinational loop, so load store instrcutions can't dispatch back by back, the more worse time waste. and how to solve?
-  // add oitf depth to 2 can sove, but the simulation result seems alu write back has higher priority spend mor time.
-/*  regFile.io.rdwen := Mux(lw_ready, lw_valid, aw_valid)
+  // add oitf depth to 2 can sove, but the simulation result seems alu write back has higher priority spend more time.
+  // icefield board (ice40up5k) simulation:
+  //            oitf depth 2 with lsu wirte back first    oitf depth 2 with alu wirte back first
+  //  dhrystone         1.168689                                       1.195697
+  //  coremark          1.256369                                       1.267519
+
+  regFile.io.rdwen := Mux(lw_ready, lw_valid, aw_valid)
   regFile.io.rd    := Mux(lw_ready, lsu_wdat, alu_wdat)
   regFile.io.rdidx := Mux(lw_ready, oitf.io.ret_rdidx, fe_inst(11, 7))
 
   aw_ready := true.B
   lw_ready := !aw_valid
-*/
 
+/*
   regFile.io.rdwen := Mux(aw_ready, aw_valid, lw_valid)
   regFile.io.rd    := Mux(aw_ready, alu_wdat, lsu_wdat)
   regFile.io.rdidx := Mux(aw_ready, fe_inst(11, 7), oitf.io.ret_rdidx)
 
   aw_ready := !lw_valid
   lw_ready := true.B
-
+*/
 }
 
 

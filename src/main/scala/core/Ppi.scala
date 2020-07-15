@@ -17,22 +17,24 @@ class PpiIO(implicit p: Parameters) extends Bundle {
 class Ppi(implicit val p: Parameters) extends Module with HasIcbParameters {
   val io = IO(new PpiIO)
 
+  //  a ping-pong buffer can be added to cut down the timing path
+//  val ppi_buffer = Module(new IcbBuffer(cmdDepth = 2, rspDepth = 2, cmdPipe = false, cmdFlow = false, rspPipe = false, rspFlow = false))
   val ppi_buffer = Module(new IcbBuffer(cmdDepth = 0, rspDepth = 0, cmdPipe = false, cmdFlow = false, rspPipe = false, rspFlow = false))
 
-  ppi_buffer.io.master <> io.icb
+  io.icb <> ppi_buffer.io.master
 
   val slave_spl = Module(new IcbSpliter(splN = 3, outN = 1, pipe = false, flow = true))
 
-  slave_spl.io.master <> ppi_buffer.io.slave
+  ppi_buffer.io.slave <> slave_spl.io.master
 
   slave_spl.io.spl_id := Mux(ppi_buffer.io.slave.cmd.bits.addr === PpiRegion.UART_ADDR, 0.U,
                          Mux(ppi_buffer.io.slave.cmd.bits.addr === PpiRegion.SPI_ADDR, 1.U, 2.U))
 
-  io.uart <> slave_spl.io.slave(0)
-  io.spi  <> slave_spl.io.slave(1)
+  slave_spl.io.slave(0) <> io.uart
+  slave_spl.io.slave(1) <> io.spi
 
   val ppi_err = Wire(new IcbIO)
-  ppi_err <> slave_spl.io.slave(2)
+  slave_spl.io.slave(2) <> ppi_err
   ppi_err.cmd.ready := true.B
   ppi_err.rsp.valid := true.B
   ppi_err.rsp.bits.err := true.B

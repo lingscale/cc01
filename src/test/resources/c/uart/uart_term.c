@@ -24,7 +24,7 @@ Feel free, and first of all, appreciated, to point out bugs.\r\n\
    int i;
    int rdata;
 
-   UART_DIV_ADDR = 195; // 57600 for 11.2896M
+   UART_DIV_ADDR = 97; // 115200 for 11.2896M
    //UART_DIV_ADDR = 425; // 57600 for 24.576M
    //UART_DIV_ADDR = 587; // 57600 for 33.8688M
    //UART_DIV_ADDR = 867;  // 57600 for 50M
@@ -42,6 +42,7 @@ Feel free, and first of all, appreciated, to point out bugs.\r\n\
 */
 
    // int len = strlen( cc01_msg );
+//   for ( i = 0; i <= 250; i++ ) {
    for ( i = 0; i <= 250; i++ ) {
       UART_TXDATA_ADDR = cc01_msg[ i ];
       rdata = UART_TXDATA_ADDR;

@@ -33,20 +33,22 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   val ie_addr      = (base_addr + 0x70).asUInt  // spi interrupt enable
   val ip_addr      = (base_addr + 0x74).asUInt  // spi interrupt pending
 
+
   io.icb.cmd.ready := true.B
   io.icb.rsp.valid := true.B
-  io.icb.rsp.bits.rdata := 0.U(xlen.W)
+  io.icb.rsp.bits.rdata := 0.U
   io.icb.rsp.bits.err := false.B
 
   val txfifo = Module(new Spi_fifo())
-  val txfifo_write = RegInit(false.B)
+  val txfifo_write = Wire(Bool())
   val txfifo_read = RegInit(false.B)
   txfifo.io.write := txfifo_write
   txfifo.io.read := txfifo_read
 
   val rxfifo = Module(new Spi_fifo())
   val rxfifo_write = RegInit(false.B)
-  val rxfifo_read = RegInit(false.B)
+  val rxfifo_read = Wire(Bool())
+  
   rxfifo.io.write := rxfifo_write
   rxfifo.io.read := rxfifo_read
 
@@ -55,12 +57,7 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   //val txdata = Cat(txdata_full, 0.U(23.W), txdata_data)  // Transmit Data Register (txdata)
   txfifo.io.in := txdata_data
 
-  when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && !io.icb.cmd.bits.read) {
-    txfifo_write := true.B
-  }
-  .otherwise {
-    txfifo_write := false.B
-  }
+  txfifo_write := io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && !io.icb.cmd.bits.read
 
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := Cat(txdata_full, 0.U(31.W))

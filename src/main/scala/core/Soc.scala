@@ -23,7 +23,7 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
   val io = IO(new SocIO)
 
   val core = Module(new Core)
-//  loadMemoryFromFile(core.itcm.tcm.ram.mem, "src/test/resources/mem.txt")
+//  loadMemoryFromFile(core.itcm.tcm.ram.mem, "src/main/resources/mem.txt")  // for simulation
 
   val clint = Module(new Clint)
 //  val plic  = Module(new Plic)
@@ -46,9 +46,10 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
   core.io.plic.rsp.valid := true.B
   core.io.plic.rsp.bits.rdata := 0.U
   core.io.plic.rsp.bits.err := false.B
-/*  core.io.ext_irq := plic.io.ext_irq
-  plic.io.irq1 := DontCare
-  plic.io.irq2 := DontCare
+/*
+  core.io.ext_irq := plic.io.ext_irq
+  plic.io.irq1 := false.B
+  plic.io.irq2 := false.B
   plic.io.irq3 := uart.io.uart_irq
 */
   ppi.io.uart <> uart.io.icb

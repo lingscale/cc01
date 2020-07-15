@@ -23,39 +23,35 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
   val ip_addr     = (base_addr + 0x14).asUInt  // interrupt pending
   val div_addr    = (base_addr + 0x18).asUInt  // baud rate divisor
 
-  io.icb.cmd.ready := true.B
-  io.icb.rsp.valid := true.B
-  io.icb.rsp.bits.rdata := 0.U(xlen.W)
-  io.icb.rsp.bits.err := false.B
-
   val txfifo = Module(new Uart_fifo())
-  val txfifo_write = RegInit(false.B)
+  val txfifo_write = Wire(Bool())
   val txfifo_read = RegInit(false.B)
   txfifo.io.write := txfifo_write
   txfifo.io.read := txfifo_read
 
+//  io.icb.cmd.ready := !txfifo.io.full
+  io.icb.cmd.ready := true.B // just to save hardware logic for iCE40UP5K
+  io.icb.rsp.valid := true.B
+  io.icb.rsp.bits.rdata := 0.U
+  io.icb.rsp.bits.err := false.B
+/*
   val rxfifo = Module(new Uart_fifo())
   val rxfifo_write = RegInit(false.B)
-  val rxfifo_read = RegInit(false.B)
+  val rxfifo_read = Wire(Bool())
   rxfifo.io.write := rxfifo_write
   rxfifo.io.read := rxfifo_read
-
+*/
   val txdata_data = io.icb.cmd.bits.wdata(7, 0)  // transmit data
   val txdata_full = txfifo.io.full               // transmit fifo full
   //val txdata = Cat(txdata_full, 0.U(23.W), txdata_data)
   txfifo.io.in := txdata_data
 
-  when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && !io.icb.cmd.bits.read) {
-    txfifo_write := true.B
-  }
-  .otherwise {
-    txfifo_write := false.B
-  }
+  txfifo_write :=io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && !io.icb.cmd.bits.read
 
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === txdata_addr) && io.icb.cmd.bits.read) {
     io.icb.rsp.bits.rdata := Cat(txdata_full, 0.U(31.W))
   }
-
+/*
   val rxdata_data = rxfifo.io.out     // received data
   val rxdata_empty = rxfifo.io.empty  // receive fifo empty
   val rxdata = Cat(rxdata_empty, 0.U(23.W), rxdata_data)
@@ -66,7 +62,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
   } .otherwise {
     rxfifo_read := false.B
   }
-
+*/
   val txctrl_txen = RegInit(false.B)    // transmit enable
   val txctrl_nstop = RegInit(false.B)   // number fo stop bits, 0 1bit, 1 2bits
   val txctrl_txcnt = RegInit(0.U(3.W))  // tanasmit watermark level
@@ -109,7 +105,8 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
   }
 
   val ip_txwm = txfifo.io.number < txctrl_txcnt  // transmit watermark interrupt pending
-  val ip_rxwm = rxfifo.io.number < rxctrl_rxcnt  // receive watermark interrupt pending
+//  val ip_rxwm = rxfifo.io.number < rxctrl_rxcnt  // receive watermark interrupt pending
+  val ip_rxwm = false.B  // receive watermark interrupt pending
   val ip = Cat(0.U(30.W), ip_rxwm, ip_txwm)
 
   when (io.icb.cmd.fire && (io.icb.cmd.bits.addr === ip_addr) && io.icb.cmd.bits.read) {
@@ -162,7 +159,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
   }
 
   when (txfifo_read) { txfifo_read := false.B }
-
+/*
   // rx function
 
   val rx = io.rx
@@ -233,7 +230,7 @@ class Uart(base_addr: Int)(implicit val p: Parameters) extends Module with CoreP
 
   when (rxfifo_write) { rxfifo_write := false.B }
 
-
+*/
 
   io.tx := tx
 

@@ -5,10 +5,9 @@ import chisel3.util.{BitPat}
 
 object Const {
 //  def PC_RTVEC = "h80000000"
-//  def PC_TVEC  = "h80000004"
+  def PC_TVEC  = "h80000004"
   def PC_RTVEC = "h20000000"
 //  def PC_TVEC  = "h20000004"
-  def PC_TVEC  = "h80000004"
 }
 
 object AddrRegion {

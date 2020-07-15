@@ -11,7 +11,7 @@ _start:
     li s1, SPI_BASE_ADDR
     li s2, ITCM_ADDR
 
-    li t0, 195  # 57600 for 11.2896M
+    li t0, 97  # 195, 57600 for 11.2896M; 97, 115200 for 11.2896M
     sw t0, 24(s0)  # offset 0x18, div
     li t0, 1
     sw t0, 8(s0)  # offset 0x08, txctrl
