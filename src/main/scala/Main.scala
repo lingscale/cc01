@@ -11,7 +11,7 @@ object Main extends App {
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Core()(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new ALUArea()(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new RegFile()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new RamMask(16, 16384)))
+  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new RamMask(14, 16384)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbArbiter(4)(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbSpliter(4)(params)))
   //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbBuffer(cmdDepth = 0, rspDepth = 0)(params)))
