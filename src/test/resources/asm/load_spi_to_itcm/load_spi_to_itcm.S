@@ -23,6 +23,11 @@ _start:
     sw t0, 0(s0)
     li t0, 0x31
     sw t0, 0(s0)
+    li t0, 0x0d
+    sw t0, 0(s0)
+    li t0, 0x0a
+    sw t0, 0(s0)
+    sw t0, 0(s0)
 
     li t1, 3       # Read Data Instruction (03h)
     sw t1, 72(s1)  # txdata, offset 0x48

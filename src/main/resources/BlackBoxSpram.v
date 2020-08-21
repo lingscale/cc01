@@ -9,8 +9,8 @@ module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
    input cs;
    input clk;
 
-`define iCEcube2  // Lattice iCEcube2 or yosys
-//`define Radiant   // Lattice Radiant
+//`define iCEcube2  // Lattice iCEcube2 or yosys
+`define Radiant   // Lattice Radiant
 
 `ifdef iCEcube2
    SB_SPRAM256KA spram_0(

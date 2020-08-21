@@ -4,11 +4,11 @@ module BlackBoxRom(
    input read,
    input clk
 );
-   reg [ 31 : 0 ] ram[ 0 : 127 ];
+   reg [ 31 : 0 ] ram[ 0 : 1023 ];
    initial
       $readmemh("src/main/resources/mem.txt", ram);
 
    always @( posedge clk ) begin
-      if ( read ) q <= ram[ addr[ 8 : 2 ] ];
+      if ( read ) q <= ram[ addr[ 11 : 2 ] ];
    end
 endmodule

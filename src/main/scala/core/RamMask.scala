@@ -32,11 +32,11 @@ class RamMask(val addr_width: Int, val ram_depth: Int) extends Module {   // Sin
 
 // this style will cause instruction fetch combinational loop
   when (io.write) {
-    mem.write(io.addr(addr_width-1+2, 0+2), dataIn, mask)
+    mem.write(io.addr(addr_width - 1, 2), dataIn, mask)
     io.dataOut := DontCare
   }
   .otherwise {
-    io.dataOut := mem.read(io.addr(addr_width-1+2, 0+2), io.read).asUInt
+    io.dataOut := mem.read(io.addr(addr_width - 1, 2), io.read).asUInt
   }
 
 //  this style may not deduce single port ram

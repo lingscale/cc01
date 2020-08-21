@@ -29,8 +29,8 @@ trait ItcmParams {
 class Tcm(tcm_ram_addr_width: Int, tcm_ram_depth: Int, allowCombLoopDet: Boolean)(implicit val p: Parameters) extends Module {
   val io = IO(Flipped(new IcbIO))
 
-  val ram = Module(new RamMask(tcm_ram_addr_width, tcm_ram_depth))  // for simulation and LFE5U-45F
-//  val ram = Module(new Ram(tcm_ram_addr_width, tcm_ram_depth))  // use blackbox instantiate iCE40UP5K SPRAM
+//  val ram = Module(new RamMask(tcm_ram_addr_width, tcm_ram_depth))  // for simulation and LFE5U-45F
+  val ram = Module(new Ram(tcm_ram_addr_width, tcm_ram_depth))  // use blackbox instantiate iCE40UP5K SPRAM
   
   ram.io.addr   := io.cmd.bits.addr
   ram.io.read   := io.cmd.bits.read && io.cmd.fire
