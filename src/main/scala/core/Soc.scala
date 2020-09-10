@@ -21,8 +21,8 @@ class SocIO(implicit val p: Parameters) extends Bundle with CoreParams {
 
 
   // for debug
-//  val led8 = Output(UInt(8.W))
-//  val led32 = Output(UInt(32.W))
+  val led8 = Output(UInt(8.W))
+  val led32 = Output(UInt(32.W))
 
 }
 
@@ -82,8 +82,8 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
 
 
   // for debug
-//  io.led8 := Cat(reset.asBool, ~core.io.excp_cause(6, 0))
-//  io.led32 := core.io.pc
+  io.led8 := Cat(reset.asBool, ~core.io.excp_cause(6, 0))
+  io.led32 := core.io.pc
 
 }
 

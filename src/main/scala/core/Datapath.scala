@@ -16,8 +16,8 @@ class DatapathIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val ctrl     = Flipped(new ControlSignals)  // post decode
 
   // for debug
-//  val excp_cause = Output(UInt(32.W))
-//  val pc = Output(UInt(32.W))
+  val excp_cause = Output(UInt(32.W))
+  val pc = Output(UInt(32.W))
 }
 
 class Datapath(implicit val p: Parameters) extends Module with CoreParams {
@@ -646,8 +646,8 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
 
   // for debug
-//  io.excp_cause := excp_cause
-//  io.pc := pc
+  io.excp_cause := excp_cause
+  io.pc := pc
 }
 
 

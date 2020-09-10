@@ -22,8 +22,8 @@ class CoreIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val mem   = new IcbIO
 
   // for debug
-//  val excp_cause = Output(UInt(32.W))
-//  val pc = Output(UInt(32.W))
+  val excp_cause = Output(UInt(32.W))
+  val pc = Output(UInt(32.W))
 }
 
 class Core(implicit val p: Parameters) extends Module with CoreParams {
@@ -77,8 +77,8 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
 
 
   // for debug
-//  io.excp_cause := datapath.io.excp_cause
-//  io.pc := datapath.io.pc
+  io.excp_cause := datapath.io.excp_cause
+  io.pc := datapath.io.pc
 
 
 }
