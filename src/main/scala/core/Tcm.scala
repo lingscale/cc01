@@ -26,25 +26,25 @@ trait ItcmParams {
   val itcm_ram_depth = p(ITCM_RAM_DEPTH)
 }
 
-class Tcm(tcm_ram_addr_width: Int, tcm_ram_depth: Int, allowCombLoopDet: Boolean)(implicit val p: Parameters) extends Module {
+class Tcm(tcm_ram_addr_width: Int, tcm_ram_depth: Int)(implicit val p: Parameters) extends Module {
   val io = IO(Flipped(new IcbIO))
 
 //  val ram = Module(new RamMask(tcm_ram_addr_width, tcm_ram_depth))  // for simulation and LFE5U-45F
   val ram = Module(new Ram(tcm_ram_addr_width, tcm_ram_depth))  // use blackbox instantiate iCE40UP5K SPRAM
-  
-  ram.io.addr   := io.cmd.bits.addr
-  ram.io.read   := io.cmd.bits.read && io.cmd.fire
-  ram.io.dataIn := io.cmd.bits.wdata
-  ram.io.mask   := io.cmd.bits.wmask
-  ram.io.cs     := io.cmd.fire
- 
-  if (allowCombLoopDet)
-    ram.io.write  := !io.cmd.bits.read && io.cmd.fire  // comb loop for ifu. how to fix it?
-  else
-    ram.io.write  := !io.cmd.bits.read  // now fix this by disable wmask signal when not write to avoid write mistaken
 
-  io.rsp.bits.rdata := ram.io.dataOut
-  io.rsp.bits.err   := false.B
+  // bypass cmd channel to cut down the back-pressure ready signal
+//  val icb_buffer = Module(new IcbBuffer(cmdDepth = 1, rspDepth = 0, cmdPipe = false, cmdFlow = true, rspPipe = true, rspFlow = false))
+  val icb_buffer = Module(new IcbBuffer(cmdDepth = 0, rspDepth = 0, cmdPipe = false, cmdFlow = true, rspPipe = true, rspFlow = false))
+  io <> icb_buffer.io.master
+
+  ram.io.addr   := icb_buffer.io.slave.cmd.bits.addr
+  ram.io.write  := !icb_buffer.io.slave.cmd.bits.read
+  ram.io.dataIn := icb_buffer.io.slave.cmd.bits.wdata
+  ram.io.mask   := icb_buffer.io.slave.cmd.bits.wmask
+  ram.io.enable := icb_buffer.io.slave.cmd.fire
+ 
+  icb_buffer.io.slave.rsp.bits.rdata := ram.io.dataOut
+  icb_buffer.io.slave.rsp.bits.err   := false.B
 
   // ram data will be read out 1 cycle after read address, so valid-ready signal delay 1 stage
   // and remember, rsp back pressure cmd here. if rsp not accepted, no new cmd can issure.
@@ -52,17 +52,17 @@ class Tcm(tcm_ram_addr_width: Int, tcm_ram_depth: Int, allowCombLoopDet: Boolean
 
   tricky_queue.io.enq.bits := DontCare
 
-  tricky_queue.io.enq.valid := io.cmd.valid
-  io.cmd.ready := tricky_queue.io.enq.ready
+  tricky_queue.io.enq.valid := icb_buffer.io.slave.cmd.valid
+  icb_buffer.io.slave.cmd.ready := tricky_queue.io.enq.ready
 
-  io.rsp.valid := tricky_queue.io.deq.valid
-  tricky_queue.io.deq.ready := io.rsp.ready
+  icb_buffer.io.slave.rsp.valid := tricky_queue.io.deq.valid
+  tricky_queue.io.deq.ready := icb_buffer.io.slave.rsp.ready
 }
 
 class Dtcm(implicit val p: Parameters) extends Module with DtcmParams {
   val io = IO(Flipped(new IcbIO))
 
-  val tcm = Module(new Tcm(dtcm_ram_addr_width, dtcm_ram_depth, true))
+  val tcm = Module(new Tcm(dtcm_ram_addr_width, dtcm_ram_depth))
 
   io <> tcm.io
 }
@@ -74,7 +74,7 @@ class Itcm(implicit val p: Parameters) extends Module with ItcmParams {
   })
 
   val arb = Module(new IcbArbiter(arbN = 2, outN = 1, pipe = true, flow = false))
-  val tcm = Module(new Tcm(itcm_ram_addr_width, itcm_ram_depth, false))
+  val tcm = Module(new Tcm(itcm_ram_addr_width, itcm_ram_depth))
 
   io.lsu <> arb.io.master(0)  // lsu has higher priotry than the ifetch unit
   io.ifu <> arb.io.master(1)

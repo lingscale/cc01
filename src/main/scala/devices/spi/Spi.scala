@@ -255,12 +255,10 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
   val rxbuf = Reg(Vec(8, Bool()))
   rxfifo.io.in := rxbuf.asUInt
 
-  val ptr = RegInit(7.U(3.W))
-  val MOSI = txfifo.io.out(ptr)
+  val ptr = Reg(UInt(3.W))
   val MISO = io.MISO
   val SS   = RegInit(true.B)
-  val SCK  = RegInit(false.B)
-  io.MOSI := MOSI
+  val SCK  = RegInit(true.B)
   io.SS := SS
   io.SCK := SCK
 
@@ -281,6 +279,8 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
       }
       .otherwise {
         SS := false.B
+        SCK := false.B
+        ptr := 7.U
         s_state := s_TXDATA
       }
     }
@@ -290,6 +290,8 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
         s_state := s_CSSCK
       }
       .otherwise {
+        SCK := false.B
+        ptr := 7.U
         s_state := s_TXDATA
       }
     }
@@ -298,39 +300,41 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
         txfifo_read := false.B
         s_state := s_RXDATA
       }
-      .elsewhen (!SCK) {
-        SCK := true.B
-        txfifo_read := false.B
-      }
-      .elsewhen (ptr =/= 0.U) {
+      .elsewhen ((txfifo.io.number === 1.U) && txfifo_read) {
         SCK := false.B
         ptr := ptr - 1.U
-      }
-      .elsewhen (txfifo.io.number === 1.U) {
-        SCK := false.B
-        txfifo_read := true.B
-        ptr := 7.U
+        txfifo_read := false.B
         s_state := s_RXDATA
       }
-      .otherwise {
+      .elsewhen (SCK) {
         SCK := false.B
+        txfifo_read := false.B
+        ptr := ptr - 1.U
+      }
+      .elsewhen (ptr =/= 0.U) {
+        SCK := true.B
+      }
+      .elsewhen (txfifo.io.number === 1.U) {
+        SCK := true.B
         txfifo_read := true.B
-        ptr := 7.U
+      }
+      .otherwise {
+        SCK := true.B
+        txfifo_read := true.B
       }
     }
     is (s_RXDATA) {
       when (csdef === "hffff_ffff".U) {
-        SCK := false.B
-        txfifo_read := false.B
+        SCK := true.B
         rxfifo_write := false.B
         ptr := 0.U
+        count := sckcs - 1.U
         s_state := s_SCKCS
       }
       .elsewhen (rxfifo.io.full) {
       }
       .elsewhen (!SCK) {
         SCK := true.B
-        txfifo_read := false.B
         rxbuf(ptr) := MISO
         rxfifo_write := false.B
       }
@@ -345,17 +349,18 @@ class Spi(base_addr: Int = 0x10014000)(implicit val p: Parameters) extends Modul
       }
     }
     is (s_SCKCS) {
-      when (count =/= 0.U) {
+      when ((sckcs =/= 0.U) && (count =/= 0.U)) {
         count := count - 1.U
-        s_state := s_SCKCS
       }
       .otherwise {
         SS := true.B
-        SCK := false.B
         s_state := s_IDLE
       }
     }
   }
+
+  val MOSI = Mux((s_state === s_IDLE), true.B, txfifo.io.out(ptr))
+  io.MOSI := MOSI
 
 }
 

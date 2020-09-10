@@ -14,6 +14,10 @@ class DatapathIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val tmr_irq = Input(Bool())
   val pre_ctrl = Flipped(new ControlSignals)  // pre decode
   val ctrl     = Flipped(new ControlSignals)  // post decode
+
+  // for debug
+//  val excp_cause = Output(UInt(32.W))
+//  val pc = Output(UInt(32.W))
 }
 
 class Datapath(implicit val p: Parameters) extends Module with CoreParams {
@@ -128,20 +132,6 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
 
   val jalr_wait = Wire(Bool())
   val pipe_flush_req_real = Wire(Bool())
-
-
-
-/*
-
-
-  val ifu_req_valid_pre = (!jalr_wait && !wfi_halt_ifu_req && !RegNext(reset.asBool, true.B)) ||  || pipe_flush_req_real
-
-  val new_req_condi = !ifu_out_flag || io.ifu.rsp.fire
-
-  io.ifu.cmd.valid := ifu_req_valid_pre && new_req_condi
-
-*/
-
 
   io.ifu.cmd.valid := ((!jalr_wait && !wfi_halt_ifu_req) || pipe_flush_req_real) && (!ifu_out_flag || io.ifu.rsp.fire)
   io.ifu.cmd.bits.addr := npc
@@ -628,10 +618,10 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   // write back
   //////////////////////////////////////////////////////////////////////////////
   // alu write back has higher priority
-  // not every alu instruction needs write back, ld st instruction can write in the gap or just wait the gap
+  // not every alu instruction needs write back, ld st instructions can write in the gap or just wait the gap
   // if depend happens, just need one extra clock. but if lsu has higher priority, it always waste one clock.
   // but unfortunately, otif can't enq when deqing, or get combinational loop, so load store instrcutions can't dispatch back by back, the more worse time waste. and how to solve?
-  // add oitf depth to 2 can sove, but the simulation result seems alu write back has higher priority spend more time.
+  // add oitf depth to 2 can solve, any better method?
   // icefield board (ice40up5k) simulation:
   //            oitf depth 2 with lsu wirte back first    oitf depth 2 with alu wirte back first
   //  dhrystone         1.168689                                       1.195697
@@ -652,6 +642,12 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   aw_ready := !lw_valid
   lw_ready := true.B
 */
+
+
+
+  // for debug
+//  io.excp_cause := excp_cause
+//  io.pc := pc
 }
 
 

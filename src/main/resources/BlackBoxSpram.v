@@ -1,12 +1,11 @@
-module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
+module BlackBoxSpram( dataOut, dataIn, addr, write, mask, enable, clk);
 
    output [ 31 : 0 ] dataOut;
    input [ 31 : 0 ] dataIn;
    input [ 31 : 0 ] addr;
-   input read;
    input write;
    input [ 3 : 0 ] mask;
-   input cs;
+   input enable;
    input clk;
 
 //`define iCEcube2  // Lattice iCEcube2 or yosys
@@ -18,7 +17,7 @@ module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
       .ADDRESS( addr[ 15 : 2 ] ),
       .MASKWREN( { mask[ 1 ], mask[ 1 ], mask[ 0 ], mask[ 0 ] } ),
       .WREN( write ),
-      .CHIPSELECT( cs ),
+      .CHIPSELECT( enable ),
       .CLOCK( clk ),
       .STANDBY( 1'b0 ),
       .SLEEP( 1'b0 ),
@@ -31,7 +30,7 @@ module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
       .ADDRESS( addr[ 15 : 2 ] ),
       .MASKWREN( { mask[ 3 ], mask[ 3 ], mask[ 2 ], mask[ 2 ] } ),
       .WREN( write ),
-      .CHIPSELECT( cs ),
+      .CHIPSELECT( enable ),
       .CLOCK( clk ),
       .STANDBY( 1'b0 ),
       .SLEEP( 1'b0 ),
@@ -46,7 +45,7 @@ module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
       .DI( dataIn[ 15 : 0 ] ),
       .MASKWE( { mask[ 1 ], mask[ 1 ], mask[ 0 ], mask[ 0 ] } ),
       .WE( write ),
-      .CS( cs ),
+      .CS( enable ),
       .CK( clk ),
       .STDBY( 1'b0 ),
       .SLEEP( 1'b0 ),
@@ -59,7 +58,7 @@ module BlackBoxSpram( dataOut, dataIn, addr, read, write, mask, cs, clk);
       .DI( dataIn[ 31 : 16 ] ),
       .MASKWE( { mask[ 3 ], mask[ 3 ], mask[ 2 ], mask[ 2 ] } ),
       .WE( write ),
-      .CS( cs ),
+      .CS( enable ),
       .CK( clk ),
       .STDBY( 1'b0 ),
       .SLEEP( 1'b0 ),

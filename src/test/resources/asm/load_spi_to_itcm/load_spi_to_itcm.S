@@ -31,7 +31,7 @@ _start:
 
     li t1, 3       # Read Data Instruction (03h)
     sw t1, 72(s1)  # txdata, offset 0x48
-    li t1, 16      # 24-Bit Address, 1M
+    li t1, 128     # 24-Bit Address, 8Mbyte
     sw t1, 72(s1)
     li t1, 0
     sw t1, 72(s1)
@@ -40,8 +40,6 @@ _start:
     li t1, 0xfffffffe # just enable simple spi SS pin
     sw t1, 20(s1)  # csdef, offset 0x14
 
-#    li t2, 512  # 128 * 4 bytes
-#    li t2, 4096  # 1k * 4 bytes
     li t2, 65536  # 16k * 4 bytes
     li t3, 0x80000000  # rxfifio empty
  1: lw t1, 76(s1)  # rxdata, offset 0x4C
@@ -58,12 +56,4 @@ _start:
 
     li ra, ITCM_ADDR
     jalr zero, 0(ra)
-
-
-
-
-
-
-
-
 

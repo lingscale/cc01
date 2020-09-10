@@ -5,6 +5,7 @@ import chisel3.util._
 import lingscale.cc01.config.{Field, Parameters}
 
 import chisel3.util.experimental.loadMemoryFromFile
+import chisel3.util.experimental.BoringUtils
 
 class SocIO(implicit val p: Parameters) extends Bundle with CoreParams {
 
@@ -17,6 +18,12 @@ class SocIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val MISO = Input(Bool())
   val SS   = Output(Bool())
   val SCK  = Output(Bool())
+
+
+  // for debug
+//  val led8 = Output(UInt(8.W))
+//  val led32 = Output(UInt(32.W))
+
 }
 
 class Soc(implicit val p: Parameters) extends Module with CoreParams {
@@ -62,6 +69,21 @@ class Soc(implicit val p: Parameters) extends Module with CoreParams {
   spi.io.MISO := io.MISO
   io.SS := spi.io.SS
   io.SCK := spi.io.SCK
+
+
+
+/*
+  val debugled = Module(new DebugLED)
+  
+  BoringUtils.bore(core.datapath.csr.mcause, Seq(debugled.led))
+
+  io.led := debugled.io.led
+*/
+
+
+  // for debug
+//  io.led8 := Cat(reset.asBool, ~core.io.excp_cause(6, 0))
+//  io.led32 := core.io.pc
 
 }
 

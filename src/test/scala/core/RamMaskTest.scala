@@ -12,7 +12,6 @@ class RamMaskUnitTester(c: RamMask) extends PeekPokeTester(c) {
   private val RamMask = c
 
   poke(RamMask.io.write, 0)
-  poke(RamMask.io.read, 0)
   step(10)
   poke(RamMask.io.write, 1)
   poke(RamMask.io.mask, 1)
@@ -33,8 +32,7 @@ class RamMaskUnitTester(c: RamMask) extends PeekPokeTester(c) {
   step(1)
   poke(RamMask.io.write, 0)
   step(2)
-  poke(RamMask.io.read, 1)
-    poke(RamMask.io.mask, 0)
+  poke(RamMask.io.mask, 0)
   for (i <- 0 to 63) {
     step(1)
     poke(RamMask.io.addr, i)

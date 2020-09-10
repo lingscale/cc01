@@ -20,6 +20,10 @@ class CoreIO(implicit val p: Parameters) extends Bundle with CoreParams {
   val clint = new IcbIO  // core local interrupts controller
   val plic  = new IcbIO  // platform-level interrupt controller
   val mem   = new IcbIO
+
+  // for debug
+//  val excp_cause = Output(UInt(32.W))
+//  val pc = Output(UInt(32.W))
 }
 
 class Core(implicit val p: Parameters) extends Module with CoreParams {
@@ -41,7 +45,7 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
   // bypass ifu response channel here because: the ready signal (fe_ready) from execute stage will back-pressure the ifetch
   // response channel, if no such bypass, there maybe a deadlock: ifu rsp wait for execute stage to be cleared, while execute stage may
   // access biu or itcm and they waiting the ifu to accept last instruction access to make way of biu or itcm for lsu to access.
-  // bypass lsu command channel also works, but spend more hardware resorces, and command link seems longer than response's.
+  // bypass lsu command channel also works, but spends more hardware resources, and command link seems longer than response's.
   val ifu_buffer = Module(new IcbBuffer(cmdDepth = 0, rspDepth = 1, cmdPipe = false, cmdFlow = true, rspPipe = false, rspFlow = true))
 //  val ifu_buffer = Module(new IcbBuffer(cmdDepth = 0, rspDepth = 1, cmdPipe = false, cmdFlow = true, rspPipe = true, rspFlow = true))
                                                                                                    /* Combinational loop */
@@ -70,6 +74,12 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
   biu.io.clint <> io.clint
   biu.io.plic  <> io.plic
   biu.io.mem   <> io.mem
+
+
+  // for debug
+//  io.excp_cause := datapath.io.excp_cause
+//  io.pc := datapath.io.pc
+
 
 }
 
