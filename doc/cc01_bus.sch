@@ -203,5 +203,5 @@ B 50300 43800 3500 800 3 0 0 0 -1 -1 0 -1 -1 -1 -1 -1
 T 53500 43850 9 10 1 0 0 0 1
 biu
 T 46650 43125 8 6 1 0 0 0 2
-since biu can't pipe, so whether pipe ture or false for IcbArbiter or buf dosen't matter,
+since biu can't pipe, so whether pipe true or false for IcbArbiter or buf dosen't matter,
 but pipe will add extra logic, so not pipe for IcbArbiter and buf are better choice.
