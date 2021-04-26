@@ -4,7 +4,7 @@ package lingscale.cc01.core
 import chisel3.Bundle
 import lingscale.cc01.config.{Parameters, Config}
 
-class CoreConfig extends Config((site, here, up) => {
+class CoreConfig extends Config((here) => {
     // Core
     case XLEN => 32
     // IcbIO
