@@ -2,39 +2,33 @@
 
 package lingscale.cc01.core
 
-import java.io.{File, FileWriter}
+import chisel3.stage.ChiselStage
 
 object Main extends App {
-//  val dir = new File(args(0)) ; dir.mkdirs
-  val dir = new File("test_run_dir/Main") ; dir.mkdirs
   implicit val params = (new CoreConfig).toInstance
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Core()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new ALUArea()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new RegFile()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new RamMask(16, 16384)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbArbiter(4)(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbSpliter(4)(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new IcbBuffer(cmdDepth = 0, rspDepth = 0)(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Biu()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new CSR()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new ImmGen()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Oitf()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Datapath()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Dtcm()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Core()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Uart_fifo(8)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Uart(0x10013000)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Clint()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Plic()(params)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Spi(0x10014000)))
-  //val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Ppi()(params)))
-  val chirrtl = firrtl.Parser.parse(chisel3.Driver.emit(() => new Soc()(params)))
-
-  val writer = new FileWriter(new File(dir, s"${chirrtl.main}.fir"))
-  writer write chirrtl.serialize
-  writer.close
-
-  val verilog = new FileWriter(new File(dir, s"${chirrtl.main}.v"))
-  verilog write (new firrtl.VerilogCompiler).compileAndEmit(firrtl.CircuitState(chirrtl, firrtl.ChirrtlForm)).getEmittedCircuit.value
-  verilog.close
+  //(new ChiselStage).emitVerilog((new Core()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new ALUArea()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new RegFile()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new RamMask(16, 16384)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new IcbArbiter(4)(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new IcbSpliter(4)(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new IcbBuffer(cmdDepth = 0, rspDepth = 0)(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Biu()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new CSR()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new ImmGen()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Oitf()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Datapath()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Dtcm()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Core()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Uart_fifo(8)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Uart(0x10013000)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Clint()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Plic()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Spi(0x10014000)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Ppi()(params)), Array("--target-dir", "generatedsrc"))
+  (new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce"))
+  //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation"))
+  // *** "--no-cse" will be supported in firrtl v1.5.0, or you may compile firrtl and "sbt publishLocal", and add library dependiency "edu.berkeley.cs" %% "firrtl" % "1.5-SNAPSHOT" to build.sbt.
+  // *** unfortunately, "--no-constant-propagation" also need firrtl v1.5.0, or something wrong with Soc
 }

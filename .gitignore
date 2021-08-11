@@ -1,10 +1,11 @@
 ### sourcenav proj
-SNDB4/*
+SNDB4/
 cc01.proj
 ###
 *.core
 ### Project Specific stuff
-test_run_dir/*
+.bsp/
+generatedsrc/
 ### XilinxISE template
 # intermediate build files
 *.bgn
