@@ -36,11 +36,7 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
   val io = IO(new OitfIo)
 
   class out_info extends Bundle {
-    val rs1en = Bool()
-    val rs2en = Bool()
     val rdwen = Bool()
-    val rs1idx = UInt(5.W)
-    val rs2idx = UInt(5.W)
     val rdidx  = UInt(5.W)
     val pc = UInt(xlen.W)
   }
@@ -62,11 +58,7 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
   private val do_ret = io.ret_valid && io.ret_ready
 
   when (do_dis) {
-    buf(dis_ptr.value).rs1en := io.dis_rs1en
-    buf(dis_ptr.value).rs2en := io.dis_rs2en
     buf(dis_ptr.value).rdwen := io.dis_rdwen
-    buf(dis_ptr.value).rs1idx := io.dis_rs1idx
-    buf(dis_ptr.value).rs2idx := io.dis_rs2idx
     buf(dis_ptr.value).rdidx  := io.dis_rdidx
     buf(dis_ptr.value).pc := io.dis_pc
     buf_vld(dis_ptr.value) := true.B
@@ -94,6 +86,4 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
   io.ret_ready := ret_ready
   io.empty := empty
 }
-
-
 
