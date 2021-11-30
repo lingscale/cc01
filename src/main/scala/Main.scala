@@ -26,9 +26,7 @@ object Main extends App {
   //(new ChiselStage).emitVerilog((new Plic()(params)), Array("--target-dir", "generatedsrc"))
   //(new ChiselStage).emitVerilog((new Spi(0x10014000)), Array("--target-dir", "generatedsrc"))
   //(new ChiselStage).emitVerilog((new Ppi()(params)), Array("--target-dir", "generatedsrc"))
-  (new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc"))
+  //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc"))
   //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce"))
-  //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation"))
-  // *** "--no-cse" will be supported in firrtl v1.5.0, or you may compile firrtl and "sbt publishLocal", and add library dependiency "edu.berkeley.cs" %% "firrtl" % "1.5-SNAPSHOT" to build.sbt.
-  // *** unfortunately, "--no-constant-propagation" also need firrtl v1.5.0, or something wrong with Soc
+  (new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation"))
 }
