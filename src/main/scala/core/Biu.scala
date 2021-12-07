@@ -38,8 +38,8 @@ class Biu(implicit val p: Parameters) extends Module with HasIcbParameters {
 
   master_arb.io.slave <> biu_buffer.io.master
 
-  val slave_spl = Module(new IcbSpliter(splN = 5, outN = 1, pipe = false, flow = true))  //the splt is after the buffer, and will directly talk to the external bus, where maybe the ROM is 0 cycle responsed, so flow true.
-//  val slave_spl = Module(new IcbSpliter(splN = 5, outN = 1, pipe = true, flow = true))  //the splt is after the buffer, and will directly talk to the external bus, where maybe the ROM is 0 cycle responsed, so flow true.
+  val slave_spl = Module(new IcbSplitter(splN = 5, outN = 1, pipe = false, flow = true))  //the splt is after the buffer, and will directly talk to the external bus, where maybe the ROM is 0 cycle responsed, so flow true.
+//  val slave_spl = Module(new IcbSplitter(splN = 5, outN = 1, pipe = true, flow = true))  //the splt is after the buffer, and will directly talk to the external bus, where maybe the ROM is 0 cycle responsed, so flow true.
                                                          /* Combinational loop detected */
 
   biu_buffer.io.slave <> slave_spl.io.master

@@ -23,7 +23,7 @@ class Ppi(implicit val p: Parameters) extends Module with HasIcbParameters {
 
   io.icb <> ppi_buffer.io.master
 
-  val slave_spl = Module(new IcbSpliter(splN = 3, outN = 1, pipe = false, flow = true))
+  val slave_spl = Module(new IcbSplitter(splN = 3, outN = 1, pipe = false, flow = true))
 
   ppi_buffer.io.slave <> slave_spl.io.master
 

@@ -105,18 +105,18 @@ class IcbArbiter(val arbN: Int, val outN: Int = 1, val pipe: Boolean = true, val
 }
 
 
-class IcbSpliterIO(splN: Int)(implicit p: Parameters) extends Bundle {
+class IcbSplitterIO(splN: Int)(implicit p: Parameters) extends Bundle {
   val master = Flipped(new IcbIO)
   val slave  = Vec(splN, new IcbIO)
   val spl_id = Input(UInt(log2Ceil(splN + 1).W))
   override def cloneType =
-    new IcbSpliterIO(splN).asInstanceOf[this.type]
+    new IcbSplitterIO(splN).asInstanceOf[this.type]
 }
 
 /* split master to splN slaves */
 
-class IcbSpliter(val splN: Int, val outN: Int = 1, val pipe: Boolean = true, val flow: Boolean = false)(implicit val p: Parameters) extends Module with HasIcbParameters {
-  val io = IO(new IcbSpliterIO(splN))
+class IcbSplitter(val splN: Int, val outN: Int = 1, val pipe: Boolean = true, val flow: Boolean = false)(implicit val p: Parameters) extends Module with HasIcbParameters {
+  val io = IO(new IcbSplitterIO(splN))
 
   if (splN > 1) {
     val id_queue = Module(new Queue(chiselTypeOf(io.spl_id), entries = outN, pipe = pipe, flow = flow))

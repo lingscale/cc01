@@ -51,7 +51,7 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
                                                                                                    /* Combinational loop */
   datapath.io.ifu <> ifu_buffer.io.master
 
-  val ifu_spl = Module(new IcbSpliter(splN = 2, outN = 1, pipe = true, flow = false))
+  val ifu_spl = Module(new IcbSplitter(splN = 2, outN = 1, pipe = true, flow = false))
   ifu_buffer.io.slave <> ifu_spl.io.master
   ifu_spl.io.spl_id := Mux(datapath.io.ifu.cmd.bits.addr === AddrRegion.ITCM_ADDR, 0.U, 1.U)
   ifu_spl.io.slave(0) <> itcm.io.ifu
@@ -60,8 +60,8 @@ class Core(implicit val p: Parameters) extends Module with CoreParams {
   val lsu_buffer = Module(new IcbBuffer(cmdDepth = 0, rspDepth = 0, cmdPipe = false, cmdFlow = true, rspPipe = false, rspFlow = true))
   datapath.io.lsu <> lsu_buffer.io.master
 
-  val lsu_spl = Module(new IcbSpliter(splN = 3, outN = 1, pipe = true, flow = false))
-//  val lsu_spl = Module(new IcbSpliter(splN = 3, outN = 1, pipe = true, flow = true))
+  val lsu_spl = Module(new IcbSplitter(splN = 3, outN = 1, pipe = true, flow = false))
+//  val lsu_spl = Module(new IcbSplitter(splN = 3, outN = 1, pipe = true, flow = true))
                                                                     /* Combinational loop detected */
   lsu_buffer.io.slave <> lsu_spl.io.master
   lsu_spl.io.spl_id := Mux(datapath.io.lsu.cmd.bits.addr === AddrRegion.DTCM_ADDR, 0.U,
