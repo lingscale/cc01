@@ -13,8 +13,6 @@ class BiuIO(implicit p: Parameters) extends Bundle {
   val clint = new IcbIO  // core local interrupt controller
   val plic  = new IcbIO  // platform-level interrupt controller
   val mem   = new IcbIO
-  override def cloneType =
-    new BiuIO().asInstanceOf[this.type]
 }
 
 class Biu(implicit val p: Parameters) extends Module with HasIcbParameters {

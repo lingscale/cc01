@@ -10,8 +10,6 @@ class PpiIO(implicit p: Parameters) extends Bundle {
   val icb = Flipped(new IcbIO)  // from bus interface unit
   val spi   = new IcbIO  // serial peripheral interface
   val uart  = new IcbIO  // universal asynchronous receiver/transmitter
-  override def cloneType =
-    new PpiIO().asInstanceOf[this.type]
 }
 
 class Ppi(implicit val p: Parameters) extends Module with HasIcbParameters {

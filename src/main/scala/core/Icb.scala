@@ -61,8 +61,6 @@ class IcbIO(implicit val p: Parameters) extends Bundle {
 class IcbArbiterIO(arbN: Int)(implicit p: Parameters) extends Bundle {
   val master = Flipped(Vec(arbN, new IcbIO))
   val slave = new IcbIO
-  override def cloneType =
-    new IcbArbiterIO(arbN).asInstanceOf[this.type]
 }
 
 /* Arbitrate among arbN masters requesting to a single slave */
@@ -109,8 +107,6 @@ class IcbSplitterIO(splN: Int)(implicit p: Parameters) extends Bundle {
   val master = Flipped(new IcbIO)
   val slave  = Vec(splN, new IcbIO)
   val spl_id = Input(UInt(log2Ceil(splN + 1).W))
-  override def cloneType =
-    new IcbSplitterIO(splN).asInstanceOf[this.type]
 }
 
 /* split master to splN slaves */
@@ -149,8 +145,6 @@ class IcbSplitter(val splN: Int, val outN: Int = 1, val pipe: Boolean = true, va
 class IcbBufferIO(implicit p: Parameters) extends Bundle {
   val master = Flipped(new IcbIO)
   val slave  = new IcbIO
-  override def cloneType =
-    new IcbBufferIO().asInstanceOf[this.type]
 }
 
 class IcbBuffer(val cmdDepth: Int = 1, val rspDepth: Int = 1, val cmdPipe: Boolean = true, val cmdFlow: Boolean = false, val rspPipe: Boolean = true, val rspFlow: Boolean = false)(implicit val p: Parameters) extends Module with HasIcbParameters {

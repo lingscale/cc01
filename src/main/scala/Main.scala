@@ -28,5 +28,7 @@ object Main extends App {
   //(new ChiselStage).emitVerilog((new Ppi()(params)), Array("--target-dir", "generatedsrc"))
   //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc"))
   //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce"))
-  (new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation"))
+  //(new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation"))
+  (new ChiselStage).emitVerilog((new Soc()(params)), Array("--target-dir", "generatedsrc", "--no-dce", "--no-cse", "--no-constant-propagation",
+                                                           "--emission-options", "disableMemRandomization,disableRegisterRandomization"))
 }

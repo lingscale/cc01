@@ -19,6 +19,7 @@ object ALU {
   val ALU_XXX    = 15.U(4.W)   // 1 1 1 1
 }
 
+
 class ALUIo(implicit val p: Parameters) extends Bundle with CoreParams {
   val A = Input(UInt(xlen.W))
   val B = Input(UInt(xlen.W))
