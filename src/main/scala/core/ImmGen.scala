@@ -22,5 +22,5 @@ class ImmGen(implicit val p: Parameters) extends Module with CoreParams {
   //val Zimm = io.inst(19, 15).zext // CSR I
   val Imm4 = 4.S(xlen.W)
 
-  io.out := MuxLookup(io.sel, Iimm & -2.S, Seq(IMM_I -> Iimm, IMM_S -> Simm, IMM_B -> Bimm, IMM_U -> Uimm, IMM_4 -> Imm4)).asUInt
+  io.out := MuxLookup(io.sel, Iimm & (-2).S)(Seq(IMM_I -> Iimm, IMM_S -> Simm, IMM_B -> Bimm, IMM_U -> Uimm, IMM_4 -> Imm4)).asUInt
 }

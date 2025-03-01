@@ -30,7 +30,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   val oitf    = Module(new Oitf)
 
   /***** Fetch Registers *****/
-  val pc = RegInit(Const.PC_RTVEC.U(xlen.W) - 4.U)
+  val pc = RegInit(Consts.PC_RTVEC.U(xlen.W) - 4.U)
   val misalign = RegInit(false.B)
 
   /***** Fetch / Execute Registers *****/
@@ -457,7 +457,7 @@ class Datapath(implicit val p: Parameters) extends Module with CoreParams {
   val lsu_need_wbck = oitf.io.ret_rdwen && !io.lsu.rsp.bits.err
 
   val lsu_wdat_raw = io.lsu.rsp.bits.rdata >> (lsinfo_queue.io.deq.bits.addr(1) << 4.U | lsinfo_queue.io.deq.bits.addr(0) << 3.U)
-  val lsu_wdat = MuxLookup(lsinfo_queue.io.deq.bits.ld_type, lsu_wdat_raw.asSInt, Seq(
+  val lsu_wdat = MuxLookup(lsinfo_queue.io.deq.bits.ld_type, lsu_wdat_raw.asSInt)(Seq(
                    LD_LH  -> lsu_wdat_raw(15, 0).asSInt, LD_LB  ->lsu_wdat_raw(7, 0).asSInt,
                    LD_LHU -> lsu_wdat_raw(15, 0).zext,   LD_LBU -> lsu_wdat_raw(7, 0).zext)).asUInt
 

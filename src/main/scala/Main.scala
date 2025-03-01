@@ -3,9 +3,10 @@
 package lingscale.cc01.core
 
 import circt.stage.ChiselStage
+import lingscale.cc01.config.Config
 
 object Main extends App {
-  implicit val params = (new CoreConfig).toInstance
+  implicit val params: Config = (new CoreConfig).toInstance
 
   val emitargs: Array[String] = Array(
     "--target-dir",

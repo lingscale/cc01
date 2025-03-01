@@ -126,7 +126,7 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
   val mstatus = Cat(SD, 0.U(8.W), TSR, TW, TVM, MXR, SUM, MPRV, XS, FS, MPP, 0.U(2.W), SPP, MPIE, 0.U(1.W), SPIE, UPIE, MIE, 0.U(1.W), SIE, UIE)
 
   // Machine Trap-Vector Base-Address Register (mtvec)
-  val mtvec = Const.PC_TVEC.U(xlen.W)  // do not support trap vector
+  val mtvec = Consts.PC_TVEC.U(xlen.W)  // do not support trap vector
 
   // Machine Interrupt Registers (mip and mie)
   val MTIP = RegInit(false.B)  // timer interrupt-pending bits
@@ -221,7 +221,7 @@ class CSR(implicit val p: Parameters) extends Module with CoreParams {
  
   val wen = (io.cmd === CSR.W) || (io.cmd === CSR.S) || (io.cmd === CSR.C)
   val value = Mux(io.inst(14).asBool, io.inst(19, 15).zext.asUInt, io.rs1.asUInt)
-  val wdata = MuxLookup(io.cmd, 0.U, Seq( CSR.W -> value, CSR.S -> (io.out | value),  CSR.C -> (io.out & ~value)))
+  val wdata = MuxLookup(io.cmd, 0.U)(Seq( CSR.W -> value, CSR.S -> (io.out | value),  CSR.C -> (io.out & ~value)))
 
   when (io.excp) {
     mepc := io.errpc >> 2 << 2

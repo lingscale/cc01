@@ -2,7 +2,6 @@ package lingscale.cc01.core
 
 import chisel3._
 import chisel3.util._
-import chisel3.experimental.{DataMirror, Direction, requireIsChiselType}
 import chisel3.internal.naming._  // can't use chisel3_ version because of compile order
 
 import lingscale.cc01.config.Parameters
@@ -78,9 +77,12 @@ class Oitf(entries: Int = 2)(implicit val p: Parameters) extends Module with Cor
     maybe_full := do_dis
   }
 
-  io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs1idx).reduce(_ || _)
-  io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs2idx).reduce(_ || _)
-  io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
+  io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld zip buf).map{ case (a, b) => a && b.rdwen && b.rdidx === io.dis_rs1idx}.reduce(_ || _)
+  io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld zip buf).map{ case (a, b) => a && b.rdwen && b.rdidx === io.dis_rs2idx}.reduce(_ || _)
+  io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld zip buf).map{ case (a, b) => a && b.rdwen && b.rdidx === io.dis_rdidx }.reduce(_ || _)
+  //io.oitfrd_match_disrs1 := io.dis_rs1en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs1idx).reduce(_ || _)
+  //io.oitfrd_match_disrs2 := io.dis_rs2en && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rs2idx).reduce(_ || _)
+  //io.oitfrd_match_disrd  := io.dis_rdwen && (buf_vld, buf, buf).zipped.map(_ && _.rdwen && _.rdidx === io.dis_rdidx ).reduce(_ || _)
 
   io.dis_ready := dis_ready
   io.ret_ready := ret_ready
