@@ -14,10 +14,10 @@ object Main extends App {
   )
 
   val firtoolOpts: Array[String] = Array(
-    "--dedup",
+    "--no-dedup",
     "--disable-all-randomization",
     "--disable-opt",
-    "--emit-chisel-asserts-as-sva",
+    "--verification-flavor=sva",
     "--preserve-values=named",
     "--strip-debug-info",
     "--strip-fir-debug-info"
